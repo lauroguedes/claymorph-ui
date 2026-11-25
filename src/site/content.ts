@@ -1568,6 +1568,15 @@ toast("Added to queue", { action: { label: "Undo", onAction: undo } })`,
 
 const RELEASES: Release[] = [
   {
+    version: "0.4.1",
+    date: "2026-11-25",
+    title: "Better on npm",
+    changes: [
+      { kind: "improved", text: "The npm page shows the full README: a banner, every element with its entry, theming and browser support, and links to the docs." },
+      { kind: "improved", text: "The package's homepage and description point to the docs at claymorph-ui.lauroguedes.dev." },
+    ],
+  },
+  {
     version: "0.4.0",
     date: "2026-11-25",
     title: "Packaged",
