@@ -30,7 +30,7 @@ Claymorph UI gives ui-sdk's web components a clay body. You keep writing the ui-
 
 - **One shader, every surface.** A single WebGL2 context draws all the clay on a page, and stops drawing the moment nothing moves.
 - **Accessible by default.** Each element wraps a ui-sdk part, so keyboard support, focus management and ARIA come built in.
-- **Parts that melt together.** Lists, menus, cards and tooltips squeeze out of their trigger and stay fused to it, and `fuse` sets how far.
+- **Parts that melt together.** Lists, menus, cards and tooltips squeeze out of their trigger and stay fused to it, and `fuse` sets how far. Dialogs fly out of their button as a bead and swell into place.
 - **Import only what you use.** One entry per element, with types. A page with a single button ships about 22 KB gzipped, ui-sdk included.
 - **Works without WebGL2.** Before the first frame, on older devices and in forced colours, the same clay is drawn with CSS.
 - **Any framework.** They're web components: use them in React, Vue, Svelte, Angular, Astro or plain HTML.

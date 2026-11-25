@@ -535,3 +535,101 @@ test("the sliding highlight is cut to the part of a scrolling list that shows, a
   highlight.measure()
   expect(springs.shown.target, "scrolled out, it fades away").toBe(0)
 })
+
+test("an attached dialog is pulled out of its button on a neck, flies with a tail, swells into place, and is drawn back in", async () => {
+  const { Flight } = await import("./flight")
+  const content = document.createElement("div")
+  const button = document.createElement("button")
+  document.body.append(content, button)
+  content.getClientRects = () => [{}] as unknown as DOMRectList
+  let landings = 0
+  const surface = { stale: false, key: "", visible: true, canvas: { width: 0, height: 0 }, ctx: { clearRect() {} }, wake() {}, invalidate() {} }
+  const teal = [0.3, 0.6, 0.6]
+  const flight = new Flight(
+    content,
+    {
+      trigger: () => button,
+      triggerShape: (box) => ({ radius: box.h / 2, height: 1 }),
+      triggerColor: () => teal as [number, number, number],
+      color: () => [0.9, 0.9, 0.9],
+      radius: 32,
+      bevel: 26,
+      lift: 2.4,
+      onLand: () => landings++,
+    },
+    () => surface as never
+  )
+  type Shape = { x: number; y: number; w: number; h: number; color: number[]; melt?: number; ghost?: boolean }
+  const inner = flight as unknown as { size: object; trigger: object; shapes(): Shape[] }
+  // The dialog is 400 by 240; its button sits 300px to the left of it and 500px below.
+  Object.assign(inner, { size: { w: 400, h: 240 }, trigger: { x: -300, y: 500, w: 120, h: 44 } })
+  content.setAttribute("data-open", "")
+  const stop = flight.connect()
+  const { step } = flight.surfaceOptions()
+  const grown = () => parseFloat(content.style.getPropertyValue("--clay-grow"))
+  const run = (frames: number, check: (shapes: Shape[]) => void = () => {}) => {
+    for (let frame = 0; frame < frames; frame++) {
+      step!(1 / 60, false)
+      check(inner.shapes())
+    }
+  }
+  const middle = (s: Shape) => ({ x: s.x + s.w / 2, y: s.y + s.h / 2 })
+
+  // Pulled out, the bead hangs by a neck from the button's own clay: the button melts the bead into
+  // its clay as a ghost, and the popup draws the bead melted into the button as a ghost, so the real
+  // button shows through.
+  const necked = (shapes: Shape[], joint: Shape[]) =>
+    shapes.length === 2 &&
+    shapes[0]!.ghost === true &&
+    shapes[0]!.color === teal &&
+    !shapes[1]!.ghost &&
+    (shapes[1]!.melt ?? 0) > 1 &&
+    joint.length === 1 &&
+    joint[0]!.ghost === true &&
+    (joint[0]!.melt ?? 0) > 1
+  let pulled: number | null = null
+  let tailed = false
+  run(10, (shapes) => {
+    if (pulled === null && necked(shapes, flight.joint(button) as Shape[])) pulled = flight.fly.x
+  })
+  expect(pulled, "pulled out, the bead hangs by a neck from the button's own clay").not.toBeNull()
+  expect(pulled!, "before it flies off").toBeLessThan(0.01)
+  expect(grown(), "the contents wait for the clay").toBe(0)
+
+  const shown: number[] = []
+  run(120, (shapes) => {
+    shown.push(grown())
+    if (flight.fly.x > 0.3 && flight.fly.x < 0.7 && shapes.length === 3) {
+      const [bead, near, far] = shapes.map(middle)
+      // Droplets drip off behind it, toward the button, melted on; the button has let go of it.
+      if (near!.y > bead!.y && far!.y > near!.y && shapes.slice(1).every((s) => (s.melt ?? 0) > 1) && !flight.joint(button).length) tailed = true
+    }
+  })
+  expect(tailed, "in flight, a tail of droplets drips off behind it").toBe(true)
+  expect(shown.every((value, i) => i === 0 || value >= shown[i - 1]!), "the contents fade in and never back, though the clay wobbles").toBe(true)
+  const shapes = inner.shapes()
+  expect(shapes, "settled, it's the slab alone").toHaveLength(1)
+  expect(shapes[0]).toMatchObject({ x: 0, y: 0, w: 400, h: 240 })
+  expect(shapes[0]!.color.map((c) => +c.toFixed(3)), "in its own colour").toEqual([0.9, 0.9, 0.9])
+  expect(grown()).toBe(1)
+
+  content.removeAttribute("data-open")
+  await Promise.resolve()
+  let drawnIn = false
+  let trailing = false
+  run(150, (shapes) => {
+    if (!landings && necked(shapes, flight.joint(button) as Shape[])) drawnIn = true
+    if (flight.fly.x > 0.3 && flight.fly.x < 0.7 && shapes.length === 3) {
+      const [bead, near, far] = shapes.map(middle)
+      // Flying home, its tail drips off behind it, toward the dialog.
+      if (near!.y < bead!.y && far!.y < near!.y) trailing = true
+    }
+  })
+  expect(trailing, "flying home, its tail trails behind it").toBe(true)
+  expect(drawnIn, "closing, the bead is drawn back into the button's own clay").toBe(true)
+  expect(landings, "and lands once").toBe(1)
+  expect(inner.shapes(), "leaving nothing behind").toEqual([])
+  expect(flight.joint(button), "on either side").toEqual([])
+  expect(grown()).toBe(0)
+  stop()
+})

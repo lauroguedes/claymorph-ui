@@ -2,6 +2,7 @@ import { Attachment, BACK, BLEND, faceOf, fuseOf, GLUE, GRIP, hug, OUT, PAST, po
 import { SPRINGS } from "../config"
 import type { ClayShape } from "../engine"
 import { ClayElement, NEUTRAL } from "../element"
+import { Flight } from "../flight"
 import { Highlight, withHighlight } from "../highlight"
 import { clamp, lerpBox, pressable, slab, type Box } from "../shared"
 import { Spring } from "../spring"
@@ -9,7 +10,8 @@ import type { ClaySurface, SurfaceOptions } from "../surface"
 
 /**
  * A trigger drawn as a clay button, and a popup drawn as a clay slab that grows out of it. With
- * `attached`, the popup squeezes out of the button like Roll's bead and stays melted onto it.
+ * `attached`, the popup squeezes out of the button like Roll's bead and stays melted onto it, or, for
+ * a dialog away from its button, flies out of it as a bead and swells into place.
  */
 abstract class ClayPopupElement extends ClayElement {
   static observedAttributes = ["color", "size", "icon", "attached", "fuse"]
@@ -18,11 +20,12 @@ abstract class ClayPopupElement extends ClayElement {
   protected popupRadius = 22
   protected popupBevel = 16
   protected popupLift = 1.4
-  /** Dialogs sit in the middle of the page, away from their trigger. */
+  /** Dialogs sit in the middle of the page, away from their trigger: attached, they fly out of it instead. */
   protected attachable = true
   /** Items a sliding highlight follows, for menus. */
   protected items = ""
   private attachment: Attachment | null = null
+  private flight: Flight | null = null
   private highlight: Highlight | null = null
   private refit: () => void = () => {}
   private cleanup: Array<() => void> = []
@@ -46,7 +49,27 @@ abstract class ClayPopupElement extends ClayElement {
       this.highlight = new Highlight(content, this.items)
       this.cleanup.push(this.highlight.watch(() => this.surfaces[1]?.invalidate()))
     }
-    if (!content || !button || !this.attachable || !this.hasAttribute("attached")) return
+    if (!content || !button || !this.hasAttribute("attached")) return
+    if (!this.attachable) {
+      this.flight = new Flight(
+        content,
+        {
+          trigger: () => this.triggerButton,
+          // As pressable() draws it, so both sides of the neck shade it the same.
+          triggerShape: (box) => ({ radius: box.h / 2, height: 1 - (this.surfaces[0]?.press.x ?? 0) * 0.4 }),
+          triggerColor: () => this.surfaces[0]?.color("--clay-color", NEUTRAL) ?? NEUTRAL,
+          color: () => this.surfaces[1]?.color("--clay-popup", NEUTRAL) ?? NEUTRAL,
+          radius: this.popupRadius,
+          bevel: this.popupBevel,
+          lift: this.popupLift,
+          onLand: () => this.surfaces[0]?.bounce(),
+          onJoin: (joined) => this.toggleAttribute("data-clay-held", joined),
+        },
+        () => this.surfaces[1]
+      )
+      this.cleanup.push(this.flight.connect())
+      return
+    }
     this.refit = hug(content, () => fuseOf(this))
     this.attachment = new Attachment(
       content,
@@ -71,6 +94,7 @@ abstract class ClayPopupElement extends ClayElement {
     for (const fn of this.cleanup) fn()
     this.cleanup = []
     this.attachment = null
+    this.flight = null
     this.highlight = null
   }
 
@@ -87,13 +111,14 @@ abstract class ClayPopupElement extends ClayElement {
           shapes: () => [
             { ...pressable(this.surfaces[at]!), blend: this.attachment ? BLEND : undefined },
             ...(this.attachment?.joint(trigger) ?? []),
+            ...(this.flight?.joint(trigger) ?? []),
           ],
         },
       ])
     }
     if (content) {
       const at = index++
-      const base = (at === 1 && this.attachment?.surfaceOptions()) || {
+      const base = (at === 1 && (this.attachment?.surfaceOptions() ?? this.flight?.surfaceOptions())) || {
         swell: false,
         pad: 40,
         shapes: () => [slab(this.surfaces[at]!, "--clay-popup", this.popupRadius, this.popupBevel, this.popupLift)],
@@ -122,7 +147,10 @@ class ClayPopover extends ClayPopupElement {
   protected popupBevel = 20
 }
 
-/** Lift: a dialog lifted out of the page as a thick clay slab. */
+/**
+ * Lift: a dialog lifted out of the page as a thick clay slab. With `attached`, it flies out of its
+ * button as a bead and swells into place, and flies back in when it closes.
+ */
 class ClayDialog extends ClayPopupElement {
   protected readonly requires = "ui-dialog-content"
   protected attachable = false

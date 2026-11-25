@@ -1270,6 +1270,12 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
         type: "p",
         text: "`.clay-actions` lines the buttons up at the end. Each close part wraps its own button, so put a `<clay-button>` around it.",
       },
+      { type: "h", text: "Attached" },
+      {
+        type: "p",
+        text: "With `attached`, the dialog grows out of the button that opened it, moving like the logo. The button's own clay swells and a bead is pulled out of it on a neck that stretches and lets go, and the page only dims once it has let go. The bead flies off dripping a tail of droplets, which run back into it as it slows, then swells into the slab, wobbling wide and tall as it takes on its colour. The contents fade in once it's nearly full size. Closing runs it all back: the slab shrinks to a bead, flies home with its tail behind, and is drawn back into the button, which bounces as it takes it in.",
+      },
+      { type: "demo", id: "dialog-attached", title: "Attached" },
       { type: "h", text: "API reference" },
       {
         type: "api",
@@ -1278,6 +1284,7 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
           { ...COMMON_API[0]!, default: "neutral", description: "The trigger's colour. The slab is always `--clay-popup`." },
           { name: "size", type: "sm | md | lg | xl", default: "md", description: "The trigger's height." },
           { name: "icon", type: "boolean", description: "A square trigger, for an icon button with an `aria-label`." },
+          { name: "attached", type: "boolean", description: "Pulls the dialog out of its trigger as a bead that flies to its place and swells into it, and draws it back in when it closes." },
         ],
       },
       { type: "h", text: "Accessibility" },
@@ -1648,10 +1655,11 @@ const RELEASES: Release[] = [
   {
     version: "0.5.0",
     date: "2026-11-25",
-    title: "Sifted",
+    title: "Sifted and flown",
     changes: [
       { kind: "new", page: "combobox", text: "**Sift**, `<clay-combobox>`: a combobox whose field is carved like Type's and whose list narrows as you type, with a well sliding between the matches. Wraps `ui-combobox`, from `claymorph-ui/combobox`." },
       { kind: "new", page: "combobox", text: "`attached` and `fuse` on Sift: the list squeezes out of the field's rim and stays melted onto it, swelling and shrinking on a spring as matches come and go." },
+      { kind: "new", page: "dialog", text: "`attached` on Lift, moving like the logo: a bead is pulled out of the button's own clay on a stretching neck, flies off dripping a tail that runs back in as it slows, and swells into the dialog with a wobble. Closing runs it all back into the button, which bounces as it takes it in." },
     ],
   },
   {

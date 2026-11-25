@@ -1144,6 +1144,42 @@ clay-dialog [data-slot="dialog-content"] {
   }
 }
 
+/*
+ * Attached Lift: the clay flies out of the button and swells into the dialog, so the slab itself stays
+ * put. Its contents fade in as the clay swells, from --clay-grow, and a hair of travel keeps ui-sdk
+ * from removing it until the clay is back in the button.
+ */
+clay-dialog[attached] [data-slot="dialog-content"] {
+  translate: 0 0;
+  scale: 1;
+  opacity: 1;
+  transition: translate 1s linear;
+
+  &:is([data-starting-style], [data-closed]) {
+    translate: 0 0.01px;
+    scale: 1;
+    opacity: 1;
+  }
+
+  /* Not the way it came in: a transition that only reverses is cut short. */
+  &[data-ending-style] {
+    translate: 0 0.02px;
+    scale: 1;
+    opacity: 1;
+  }
+
+  & > :not(.clay-canvas) {
+    opacity: clamp(0, calc((var(--clay-grow, 1) - 0.72) * 3.6), 1);
+    translate: 0 calc((1 - var(--clay-grow, 1)) * 10px);
+  }
+}
+
+/* The bead is pulled out of the button's own clay: the page only dims once it has let go of the
+   button, so the button and the bead look alike where they join. */
+clay-dialog[attached][data-clay-held] [data-slot="dialog-backdrop"] {
+  opacity: 0;
+}
+
 .clay-actions {
   display: flex;
   flex-wrap: wrap;
