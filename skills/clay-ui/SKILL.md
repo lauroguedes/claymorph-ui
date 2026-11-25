@@ -1,6 +1,6 @@
 ---
 name: clay-ui
-description: Builds interfaces with Claymorph UI, soft clay web components drawn by one WebGL2 shader on top of ui-sdk. Use when a project depends on claymorph-ui, has src/clay/, or mentions Claymorph UI, claymorphism components, or any of its verbs - Press (button), Roll (async action button), Latch (toggle), Fuse (button group), Drag (slide to confirm), Type (input), Slide (segmented control), Flip (switch), Tick (checkbox), Pick (radio group), Stretch (slider), Pour (select), Shift (tabs), Spill (menu), Unfold (popover), Lift (dialog), Pop (tooltip), Drop (toast), Hold (card), Stamp (badge), Frame (avatar), Fill (progress), Gauge (meter).
+description: Builds interfaces with Claymorph UI, soft clay web components drawn by one WebGL2 shader on top of ui-sdk. Use when a project depends on claymorph-ui, has src/clay/, or mentions Claymorph UI, claymorphism components, or any of its verbs - Press (button), Roll (async action button), Latch (toggle), Fuse (button group), Drag (slide to confirm), Type (input), Slide (segmented control), Flip (switch), Tick (checkbox), Pick (radio group), Stretch (slider), Pour (select), Sift (combobox), Shift (tabs), Spill (menu), Unfold (popover), Lift (dialog), Pop (tooltip), Drop (toast), Hold (card), Stamp (badge), Frame (avatar), Fill (progress), Gauge (meter).
 ---
 
 # Claymorph UI
@@ -31,6 +31,7 @@ Clay elements give ui-sdk's web components a clay body. The ui-sdk part inside k
 | Pick | One of 2–7 options in a form | `<clay-radio>` | `ui-radio-group` |
 | Stretch | A value by feel | `<clay-slider>` | `ui-slider` |
 | Pour | One of many options | `<clay-select>` | `ui-select` |
+| Sift | One of a long list, found by typing | `<clay-combobox>` | `ui-combobox`; put the input and its buttons in one `<div>` |
 | Shift | Views of the same thing | `<clay-tabs>` | `ui-tabs` |
 | Spill | Several actions on one thing | `<clay-menu>` | `ui-menu` |
 | Unfold | A short task by its button | `<clay-popover>` | `ui-popover` |
@@ -88,9 +89,10 @@ toast.success("Invite sent")
 
 - **Roll** keeps its idle label as its accessible name in every state and announces success or error. Return a promise from `action`; a rejection shows the error state.
 - **Pour**: the list grows from the trigger. Don't put a `clay-card` inside it.
+- **Sift**: wrap `ui-combobox-input` and its trigger or clear buttons in one `<div>`: that's the field the clay is carved into, and the list lines up with it. A trigger `<button>` with no icon gets a chevron.
 - **Pop** around an icon button: put the `<clay-button>` inside `<ui-tooltip>` and the `<ui-tooltip-trigger><button aria-label=…>` inside the `<clay-button>`.
 - **Hold** is a container, not a control. Put real controls inside it for actions; `interactive` only adds the swell.
-- **Attached** (`attached` on `<clay-input>`, `<clay-select>`, `<clay-menu>`, `<clay-popover>`, `<clay-tooltip>` and `<clay-toast-region>`): parts squeeze out of their body like Roll's bead, stay melted onto it, and tuck back in when they leave. Type draws the `ui-field-label` and `ui-field-description` placed inside it as beads on its rim; Pour, Spill, Unfold and Pop grow their popup out of the trigger; Drop's toasts each pull out of the one before.
+- **Attached** (`attached` on `<clay-input>`, `<clay-select>`, `<clay-combobox>`, `<clay-menu>`, `<clay-popover>`, `<clay-tooltip>` and `<clay-toast-region>`): parts squeeze out of their body like Roll's bead, stay melted onto it, and tuck back in when they leave. Type draws the `ui-field-label` and `ui-field-description` placed inside it as beads on its rim; Pour, Spill, Unfold and Pop grow their popup out of the trigger, and Sift its list out of the field, swelling and shrinking with the matches; Drop's toasts each pull out of the one before.
 - **Type** shows focus as its rim glowing, so don't add your own focus outline to it.
 - **Lift**: put `<clay-button>` around each `<ui-dialog-close>`, and the buttons in a `.clay-actions` row. The slab doesn't scroll, so keep dialogs short.
 - **Drop**: place one `<clay-toast-region>` per page (a second region needs its own `createToaster()` set as its `toaster`), and put a `<button>` inside `<ui-toast-action>` in its template, or the action renders as plain text.

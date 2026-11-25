@@ -596,7 +596,7 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
       {
         type: "when",
         use: ["One choice from a list longer than a few options."],
-        avoid: ["Two to five short options: use **Slide**.", "Searching a long list: use a combobox."],
+        avoid: ["Two to five short options: use **Slide**.", "Searching a long list: use **Sift**."],
       },
       { type: "install" },
       { type: "h", text: "Usage" },
@@ -643,6 +643,84 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
         items: [
           "A ui-sdk select: a combobox trigger, a listbox, typeahead, and the value submitted with its form.",
           "The list's opening is CSS on `data-starting-style`, so it's off under reduced motion.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "combobox",
+    group: "components",
+    section: "Inputs",
+    title: "Combobox",
+    tag: "clay-combobox",
+    verb: "Sift",
+    signature: "The list narrows as you type.",
+    description:
+      "A combobox whose field is carved like Type's, with a list that pours out under it and narrows as you type, while a well slides between the matches. Wraps `ui-combobox`.",
+    hero: "combobox-basic",
+    blocks: [
+      {
+        type: "when",
+        use: ["One choice from a long list, found by typing: a country, a genre, an assignee."],
+        avoid: ["A short list people can scan: use **Pour**.", "Free text where suggestions only help: use **Type**."],
+      },
+      { type: "install" },
+      { type: "h", text: "Usage" },
+      {
+        type: "p",
+        text: "Put the input and its buttons in one box: that box is the field the clay is carved into, and the list lines up with it. A trigger button with no icon of its own gets a chevron.",
+      },
+      {
+        type: "code",
+        title: "index.html",
+        code: `<clay-combobox>
+  <ui-combobox>
+    <ui-combobox-label>Genre</ui-combobox-label>
+    <div>
+      <ui-combobox-input><input placeholder="Search genres" /></ui-combobox-input>
+      <ui-combobox-trigger><button aria-label="Show genres"></button></ui-combobox-trigger>
+    </div>
+    <ui-combobox-content hidden>
+      <ui-combobox-empty>No genres found.</ui-combobox-empty>
+      <ui-combobox-list>
+        <ui-combobox-item value="jazz">Jazz</ui-combobox-item>
+        <ui-combobox-item value="samba">Samba</ui-combobox-item>
+      </ui-combobox-list>
+    </ui-combobox-content>
+  </ui-combobox>
+</clay-combobox>`,
+      },
+      { type: "h", text: "Attached" },
+      {
+        type: "p",
+        text: "With `attached`, the list squeezes out of the field's rim and stays melted onto it. As you type, it swells and shrinks on a spring with the matches, from the edge it's attached by, and the field's well gives a little as it tucks back in. Type “so”, then delete it, to see it shrink and swell back.",
+      },
+      { type: "demo", id: "combobox-attached", title: "Attached" },
+      { type: "h", text: "Fuse" },
+      {
+        type: "p",
+        text: "Like Pour's, `fuse` sets how far the list melts into the field, from `0`, a slight waist with a small gap, to `1`, one body. Set it with the slider, then open the list.",
+      },
+      { type: "demo", id: "combobox-fuse", title: "Fuse" },
+      { type: "h", text: "API reference" },
+      {
+        type: "api",
+        title: "Attributes",
+        rows: [
+          { ...COMMON_API[0]!, default: "teal", description: "The rim's glow while focused. The list uses `--clay-popup`." },
+          { name: "size", type: "sm | md | lg", default: "md", description: "The field's height: 40, 48 or 56 px." },
+          { name: "attached", type: "boolean", description: "Grows the list out of the field and keeps them melted together while it's open, its size following the matches on a spring." },
+          { name: "fuse", type: "number", default: "0", description: "With `attached`, how far the list melts into the field, from 0 to 1." },
+        ],
+      },
+      { type: "h", text: "Accessibility" },
+      {
+        type: "list",
+        items: [
+          "A ui-sdk combobox, the WAI-ARIA pattern with list autocomplete: focus stays in the input while the arrow keys move the highlight, Enter chooses, and Escape closes the list and restores the chosen label.",
+          "Name the input with `ui-combobox-label`, and an icon-only trigger or clear button with `aria-label`.",
+          "Long lists scroll inside the clay, and the well never slides past what shows of them.",
+          "Opening is CSS on `data-starting-style`, and the resize follows the reduced-motion setting, so both are still under reduced motion.",
         ],
       },
     ],
@@ -1567,6 +1645,15 @@ toast("Added to queue", { action: { label: "Undo", onAction: undo } })`,
 ]
 
 const RELEASES: Release[] = [
+  {
+    version: "0.5.0",
+    date: "2026-11-25",
+    title: "Sifted",
+    changes: [
+      { kind: "new", page: "combobox", text: "**Sift**, `<clay-combobox>`: a combobox whose field is carved like Type's and whose list narrows as you type, with a well sliding between the matches. Wraps `ui-combobox`, from `claymorph-ui/combobox`." },
+      { kind: "new", page: "combobox", text: "`attached` and `fuse` on Sift: the list squeezes out of the field's rim and stays melted onto it, swelling and shrinking on a spring as matches come and go." },
+    ],
+  },
   {
     version: "0.4.1",
     date: "2026-11-25",

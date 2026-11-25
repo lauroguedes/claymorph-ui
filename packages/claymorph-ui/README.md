@@ -92,6 +92,7 @@ Every element is named for the one thing it does.
 | Pick | Radio group | `<clay-radio>` | `claymorph-ui/radio` |
 | Stretch | Slider | `<clay-slider>` | `claymorph-ui/slider` |
 | Pour | Select | `<clay-select>` | `claymorph-ui/select` |
+| Sift | Combobox | `<clay-combobox>` | `claymorph-ui/combobox` |
 | Shift | Tabs | `<clay-tabs>` | `claymorph-ui/tabs` |
 | Spill | Menu | `<clay-menu>` | `claymorph-ui/menu` |
 | Unfold | Popover | `<clay-popover>` | `claymorph-ui/popover` |

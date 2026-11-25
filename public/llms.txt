@@ -8,7 +8,7 @@
 - Never recreate the clay with your own `box-shadow`, canvas or SVG. The elements draw it with WebGL2 and fall back to CSS by themselves.
 - Import once: `import "@ui-sdk/core/web.css"` then `import "./clay"` (the copied `src/clay/` folder).
 - Colour with the `color` attribute (a preset or any CSS colour) or the `--clay-*` variables. Tune the material with the `CLAY` object.
-- Pick by verb: Press → `<clay-button>`, Roll → `<clay-action-button>`, Latch → `<clay-toggle>`, Fuse → `<clay-button-group>`, Drag → `<clay-slide-confirm>`, Type → `<clay-input>`, Slide → `<clay-segmented>`, Flip → `<clay-switch>`, Tick → `<clay-checkbox>`, Pick → `<clay-radio>`, Stretch → `<clay-slider>`, Pour → `<clay-select>`, Shift → `<clay-tabs>`, Spill → `<clay-menu>`, Unfold → `<clay-popover>`, Lift → `<clay-dialog>`, Pop → `<clay-tooltip>`, Drop → `<clay-toast-region>`, Hold → `<clay-card>`, Stamp → `<clay-badge>`, Frame → `<clay-avatar>`, Fill → `<clay-progress>`, Gauge → `<clay-meter>`.
+- Pick by verb: Sift → `<clay-combobox>`, Press → `<clay-button>`, Roll → `<clay-action-button>`, Latch → `<clay-toggle>`, Fuse → `<clay-button-group>`, Drag → `<clay-slide-confirm>`, Type → `<clay-input>`, Slide → `<clay-segmented>`, Flip → `<clay-switch>`, Tick → `<clay-checkbox>`, Pick → `<clay-radio>`, Stretch → `<clay-slider>`, Pour → `<clay-select>`, Shift → `<clay-tabs>`, Spill → `<clay-menu>`, Unfold → `<clay-popover>`, Lift → `<clay-dialog>`, Pop → `<clay-tooltip>`, Drop → `<clay-toast-region>`, Hold → `<clay-card>`, Stamp → `<clay-badge>`, Frame → `<clay-avatar>`, Fill → `<clay-progress>`, Gauge → `<clay-meter>`.
 - Behaviour, events and names come from the ui-sdk part inside: listen on `<ui-button>`, `<ui-switch>` and so on, and name every control.
 
 ## Get started
@@ -20,6 +20,7 @@
 
 ## Components
 
+- [Combobox](/docs/combobox.md) (Sift): A combobox whose field is carved like Type's, with a list that pours out under it and narrows as you type, while a well slides between the matches. Wraps `ui-combobox`.
 - [Button](/docs/button.md) (Press): A clay button. It swells toward the pointer, squashes and glows when pressed, and springs back. Wraps `ui-button`.
 - [Action Button](/docs/action-button.md) (Roll): An async action. A clay bead sits beside the body; pressing it melts the bead in, it stays melted while the action runs, then turns into a check (or a cross) and rolls back out.
 - [Toggle](/docs/toggle.md) (Latch): A toggle button whose clay sinks into a coloured well while it's on, and pops back out when it's off. Wraps `ui-toggle`.

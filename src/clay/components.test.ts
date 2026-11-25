@@ -403,3 +403,135 @@ test("an attached select's joint is smoothed all the way at any fuse", async () 
   select.setAttribute("fuse", "0.5")
   expect(attachment.shapes().some((shape) => shape.flatten === 1)).toBe(true)
 })
+
+const genres = (attrs = "") => `
+  <clay-combobox ${attrs}>
+    <ui-combobox>
+      <ui-combobox-label>Genre</ui-combobox-label>
+      <div>
+        <ui-combobox-input><input placeholder="Search genres" /></ui-combobox-input>
+        <ui-combobox-trigger><button aria-label="Show genres"></button></ui-combobox-trigger>
+      </div>
+      <ui-combobox-content hidden>
+        <ui-combobox-empty>No genres found.</ui-combobox-empty>
+        <ui-combobox-list>
+          <ui-combobox-item value="jazz">Jazz</ui-combobox-item>
+          <ui-combobox-item value="samba">Samba</ui-combobox-item>
+          <ui-combobox-item value="soul">Soul</ui-combobox-item>
+        </ui-combobox-list>
+      </ui-combobox-content>
+    </ui-combobox>
+  </clay-combobox>`
+
+test("Sift still chooses by name, and its attached list lines up with the whole field and hugs it", async () => {
+  document.body.innerHTML = genres("attached")
+  await settle()
+  const field = document.querySelector("ui-combobox-input")!.parentElement!
+  const content = document.querySelector("ui-combobox-content")!
+  expect(content.getAttribute("anchor"), "the list lines up with the field, buttons and all").toBe(`#${field.id}`)
+  expect(content.getAttribute("side-offset")).toBe("4")
+  document.querySelector("clay-combobox")!.setAttribute("fuse", "1")
+  expect(content.getAttribute("side-offset"), "fused, it sits right on the field").toBe("0")
+  const result = await agent.act({ steps: [{ ref: "Genre", action: "setValue", args: ["Samba"] }] })
+  expect(result.ok, result.error?.message).toBe(true)
+  await settle()
+  expect(document.querySelector("input")!.value).toBe("Samba")
+})
+
+test("Sift keeps an anchor the page chose", async () => {
+  document.body.innerHTML = genres().replace("<ui-combobox-content hidden>", `<ui-combobox-content hidden anchor="#elsewhere">`)
+  await settle()
+  expect(document.querySelector("ui-combobox-content")!.getAttribute("anchor")).toBe("#elsewhere")
+})
+
+test("a resizing popup follows its new size on a spring, and the edge it's attached by stays put", async () => {
+  const { Attachment } = await import("./attach")
+  type Box = { x: number; y: number; w: number; h: number }
+  const content = document.createElement("div")
+  const host = document.createElement("button")
+  document.body.append(content, host)
+  const surface = { stale: false, wake() {}, invalidate() {} }
+  const attachment = new Attachment(
+    content,
+    {
+      trigger: () => host,
+      triggerRadius: (box) => box.h / 2,
+      triggerColor: () => [0.3, 0.6, 0.6],
+      color: () => [0.4, 0.4, 0.5],
+      radius: 22,
+      bevel: 16,
+      lift: 1.3,
+      resize: true,
+    },
+    () => surface as never
+  )
+  const inner = attachment as unknown as { trigger: Box; size: { w: number; h: number }; tucked: boolean; follow(t: Box, w: number, h: number): void; full(): Box }
+  const { step } = attachment.surfaceOptions()
+  const open = (t: Box, h: number) => {
+    Object.assign(inner, { trigger: t, size: { w: 200, h }, tucked: false })
+    attachment.emerge.set(0.2)
+    attachment.emerge.target = 1
+    inner.follow(t, 200, h)
+    attachment.emerge.set(1)
+  }
+  const filter = (t: Box, h: number, check: (box: Box) => void) => {
+    inner.trigger = t
+    inner.size = { w: 200, h }
+    inner.follow(t, 200, h)
+    for (let frame = 0; frame < 90; frame++) {
+      step!(1 / 60, false)
+      check(inner.full())
+    }
+  }
+
+  // Below the field: the list's top stays on the field as it shrinks from 300px to 100px.
+  open({ x: 0, y: -50, w: 200, h: 46 }, 300)
+  expect(inner.full(), "coming out, it takes its size at once").toEqual({ x: 0, y: 0, w: 200, h: 300 })
+  inner.follow({ x: 0, y: -50, w: 200, h: 46 }, 200, 100)
+  expect(inner.full().h, "all the way out, it doesn't jump to the new size").toBe(300)
+  const heights: number[] = []
+  filter({ x: 0, y: -50, w: 200, h: 46 }, 100, (box) => {
+    expect(box.y).toBeCloseTo(0, 5)
+    heights.push(box.h)
+  })
+  expect(heights.some((h) => h > 110 && h < 290), "it eases through the sizes in between").toBe(true)
+  expect(inner.full().h).toBeCloseTo(100, 1)
+
+  // Above the field: ui-sdk moves the shorter list down to keep its bottom on the field, and so does its clay.
+  open({ x: 0, y: 304, w: 200, h: 46 }, 300)
+  filter({ x: 0, y: 104, w: 200, h: 46 }, 100, (box) => expect(box.y + box.h).toBeCloseTo(100, 3))
+  expect(inner.full().y).toBeCloseTo(0, 1)
+
+  // Closing, it tucks in at the size it had, whatever its contents do meanwhile.
+  attachment.emerge.target = -0.08
+  inner.follow({ x: 0, y: 104, w: 200, h: 46 }, 200, 300)
+  expect(inner.full().h).toBeCloseTo(100, 1)
+})
+
+test("the sliding highlight is cut to the part of a scrolling list that shows, and hides past it", async () => {
+  const { Highlight } = await import("./highlight")
+  const rect = (y: number, h: number) => ({ left: 0, top: y, right: 200, bottom: y + h, width: 200, height: h, x: 0, y }) as DOMRect
+  const list = document.createElement("div")
+  const viewport = document.createElement("div")
+  const item = document.createElement("div")
+  item.dataset.slot = "combobox-item"
+  item.setAttribute("data-highlighted", "")
+  viewport.append(item)
+  list.append(viewport)
+  list.getBoundingClientRect = () => rect(0, 300)
+  Object.defineProperties(list, { offsetWidth: { value: 200 }, offsetHeight: { value: 300 } })
+  viewport.getBoundingClientRect = () => rect(8, 200)
+  item.getClientRects = () => [rect(0, 0)] as unknown as DOMRectList
+  const highlight = new Highlight(list, "[data-slot='combobox-item']", () => viewport)
+  const springs = highlight as unknown as { y: { target: number }; h: { target: number }; shown: { target: number } }
+
+  item.getBoundingClientRect = () => rect(190, 38)
+  highlight.measure()
+  expect(springs.shown.target).toBe(1)
+  expect(springs.y.target).toBe(190)
+  expect(springs.h.target, "half scrolled out, the well covers only what shows").toBe(18)
+
+  item.getBoundingClientRect = () => rect(204, 38)
+  highlight.measure()
+  expect(springs.shown.target, "scrolled out, it fades away").toBe(0)
+})

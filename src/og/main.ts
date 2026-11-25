@@ -33,6 +33,14 @@ const ACCENTS = ["--clay-teal", "--clay-lilac", "--clay-sky", "--clay-peach", "-
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 30))
 
+/** A card's accent, from its name: a new page doesn't recolour the cards of the pages after it. */
+function accentOf(key: string) {
+  if (key === "home") return ACCENTS[0]!
+  let hash = 0
+  for (const char of key) hash = (hash * 31 + char.charCodeAt(0)) >>> 0
+  return ACCENTS[hash % ACCENTS.length]!
+}
+
 /** Draws a scene on the clay surface right away, frames or not, and returns its canvas and pad. */
 async function clay(el: OgClay, width: number, height: number, scene: Scene) {
   el.style.width = `${width}px`
@@ -218,8 +226,7 @@ async function main() {
     },
   ]
   for (const [index, item] of cards.entries()) {
-    const accent = ACCENTS[item.key === "home" ? 0 : index % ACCENTS.length]!
-    const { canvas, pad } = await clay(el, WIDTH, HEIGHT, art(accent))
+    const { canvas, pad } = await clay(el, WIDTH, HEIGHT, art(accentOf(item.key)))
     const image = card(canvas, pad, item)
     out.append(image)
     if (saving) await save(`og/${item.key}.jpg`, image, "image/jpeg")

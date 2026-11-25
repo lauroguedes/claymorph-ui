@@ -26,7 +26,7 @@ A select whose list pours out of its clay button: it grows from the trigger on a
 **Not for**
 
 - Two to five short options: use **Slide**.
-- Searching a long list: use a combobox.
+- Searching a long list: use **Sift**.
 
 ## Installation
 
