@@ -26,3 +26,6 @@ dist-ssr
 # Built npm package
 packages/claymorph-ui/dist
 packages/*.tgz
+
+# Wrangler
+.wrangler/

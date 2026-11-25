@@ -1,0 +1,15 @@
+// The docs site on Cloudflare Workers: the prerendered pages in dist/, served as static assets.
+{
+  "name": "claymorph-ui",
+  "compatibility_date": "2026-11-23",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./dist",
+    // Every page is prerendered: a path that isn't one gets 404.html, with a 404 status.
+    "not_found_handling": "404-page"
+  },
+  // Branch builds run `wrangler preview`, which needs this block, even empty.
+  "previews": {}
+}
