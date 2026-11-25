@@ -1,0 +1,54 @@
+name: Release
+
+# Push a tag like v0.4.1 that matches the latest release in src/site/content.ts.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write # the GitHub release
+  id-token: write # npm provenance and trusted publishing
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+
+      - name: Typecheck and test
+        run: |
+          npx tsc --noEmit -p .
+          npm test
+
+      - name: Build the package
+        run: npm run build:lib
+
+      - name: Check the tag matches the version
+        run: node scripts/release-check.ts "$GITHUB_REF_NAME"
+
+      - name: Install the packed package in a fresh app
+        run: node scripts/smoke-test.ts
+
+      # With a trusted publisher set up on npmjs.com no token is needed; NPM_TOKEN is the fallback.
+      - name: Publish
+        working-directory: packages/claymorph-ui
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: GitHub release
+        run: |
+          node scripts/release-notes.ts "$GITHUB_REF_NAME" > notes.md
+          gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+        env:
+          GH_TOKEN: ${{ github.token }}

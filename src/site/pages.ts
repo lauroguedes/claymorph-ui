@@ -1,8 +1,17 @@
+import { Accessibility, Blend, Bot, CodeXml, Layers, Package, ShieldCheck, type IconNode } from "lucide"
 import { codeBlock, escape } from "./code"
 import { componentPages, orderedPages, RELEASES, SECTIONS, SITE, type Block, type DocPage, type Row } from "./content"
 import { demoHtml, preview } from "./demos"
+import { icon } from "./icons"
 
 const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "")
+
+/** Docs text as plain words, for meta descriptions and cards. */
+const plain = (text: string) =>
+  text
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\*\*([^*]+)\*\*/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
 
 function inline(text: string) {
   return escape(text)
@@ -145,31 +154,157 @@ function docPage(page: DocPage) {
     </article>`
 }
 
+const FEATURES: Array<{ icon: IconNode; title: string; text: string }> = [
+  {
+    icon: Layers,
+    title: "One shader, every surface",
+    text: "A single WebGL2 context draws all the clay on a page, with springs that swell, squash and melt, and it stops the moment nothing moves.",
+  },
+  {
+    icon: Accessibility,
+    title: "Accessible by default",
+    text: "The ui-sdk part inside each element keeps the keyboard, focus, ARIA and forms. The clay only adds the material and the motion.",
+  },
+  {
+    icon: Blend,
+    title: "Parts that melt together",
+    text: "Lists, menus, cards and tags squeeze out of their trigger and stay fused to it, and `fuse` sets how far they melt in.",
+  },
+  {
+    icon: Package,
+    title: "Import only what you use",
+    text: "One entry per element, with types. A page with a single button ships about 22 KB gzipped, ui-sdk included.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Works without WebGL2",
+    text: "Before the first frame, on older devices and in forced colours, the same clay is drawn with CSS, so nothing breaks.",
+  },
+  {
+    icon: Bot,
+    title: "Ready for agents",
+    text: "`llms.txt`, Markdown docs and an agent skill ship with it, and every control can be operated over WebMCP.",
+  },
+]
+
+/** A small settings card made of live elements, so the first thing on the page is the clay itself. */
+const HERO_ART = `
+  <clay-card class="hero-card" color="slate">
+    <div class="hero-card-head">
+      <clay-avatar color="peach" status="online"><ui-avatar role="img" aria-label="Mia, online"><ui-avatar-fallback aria-hidden="true">MI</ui-avatar-fallback></ui-avatar></clay-avatar>
+      <div>
+        <p class="hero-card-title">Evening mix</p>
+        <p class="hero-card-sub">24 tracks · 1 h 32 min</p>
+      </div>
+    </div>
+    <clay-select attached color="teal" class="hero-select">
+      <ui-select default-value="week">
+        <ui-select-label>Played</ui-select-label>
+        <ui-select-trigger><button><ui-select-value></ui-select-value></button></ui-select-trigger>
+        <ui-select-content>
+          <ui-select-item value="day">Today</ui-select-item>
+          <ui-select-item value="week">This week</ui-select-item>
+          <ui-select-item value="month">This month</ui-select-item>
+        </ui-select-content>
+      </ui-select>
+    </clay-select>
+    <clay-slider>
+      <ui-field>
+        <ui-slider default-value="64" aria-label="Volume">
+          <div class="clay-slider-head">
+            <ui-field-label>Volume</ui-field-label>
+            <ui-slider-value></ui-slider-value>
+          </div>
+          <ui-slider-control>
+            <ui-slider-track>
+              <ui-slider-indicator></ui-slider-indicator>
+              <ui-slider-thumb></ui-slider-thumb>
+            </ui-slider-track>
+          </ui-slider-control>
+        </ui-slider>
+      </ui-field>
+    </clay-slider>
+    <div class="hero-card-foot">
+      <label class="demo-label">
+        Autoplay
+        <clay-switch color="lilac"><ui-switch default-checked><ui-switch-thumb></ui-switch-thumb></ui-switch></clay-switch>
+      </label>
+      <clay-action-button color="teal" pending-label="Saving…" success-label="Saved">
+        <ui-button><button>Save mix</button></ui-button>
+      </clay-action-button>
+    </div>
+  </clay-card>`
+
 function home() {
+  const count = componentPages().length
+  const latest = RELEASES[0]!
   return `
     <section class="hero">
-      <p class="eyebrow">${SITE.name} · web components</p>
-      <h1>${SITE.tagline}</h1>
-      <p class="lead">${componentPages().length} soft clay components for any page. One WebGL2 shader draws them, <a href="https://ui-sdk.dev">ui-sdk</a> gives them their keyboard, focus and ARIA, and plain CSS takes over when WebGL2 isn't there.</p>
-      <div class="hero-actions">
-        <clay-button color="teal" size="lg">
-          <ui-button><a href="/docs">Get started</a></ui-button>
-        </clay-button>
-        <clay-button size="lg">
-          <ui-button><a href="/playground">Open the playground</a></ui-button>
-        </clay-button>
+      <div class="hero-copy">
+        <a class="hero-badge" href="/changelog"><span>New</span>${latest.version} · ${escape(latest.title)}</a>
+        <h1>${SITE.tagline}</h1>
+        <p class="lead">${SITE.name} is ${count} claymorphism web components. One WebGL2 shader gives them a soft clay body, <a href="https://ui-sdk.dev">ui-sdk</a> gives them their keyboard, focus and ARIA, and they work in React, Vue, Svelte, Angular or plain HTML.</p>
+        <div class="hero-actions">
+          <clay-button color="teal" size="lg">
+            <ui-button><a href="/docs/installation">Get started</a></ui-button>
+          </clay-button>
+          <clay-button size="lg">
+            <ui-button><a href="${SITE.source}">${icon(CodeXml)}View on GitHub</a></ui-button>
+          </clay-button>
+        </div>
+        <div class="hero-install">${codeBlock("terminal", INSTALL)}</div>
       </div>
+      <div class="hero-art" data-hero>${HERO_ART}</div>
     </section>
-    <section aria-label="Components">${grid()}</section>
-    <section class="facts" aria-label="Facts">
-      <div><p class="fact">1</p><p>WebGL2 context for every surface on the page.</p></div>
-      <div><p class="fact">${componentPages().length}</p><p>components, one verb each.</p></div>
-      <div><p class="fact">0</p><p>dependencies besides ui-sdk.</p></div>
+    <section class="stats" aria-label="At a glance">
+      <div><p class="stat">1</p><p>WebGL2 context for every surface on the page</p></div>
+      <div><p class="stat">${count}</p><p>components, each named for what it does</p></div>
+      <div><p class="stat">22 KB</p><p>gzipped for a button, ui-sdk included</p></div>
+      <div><p class="stat">MIT</p><p>free and open source</p></div>
     </section>
-    <section class="home-install">
-      <h2>Install in one command</h2>
-      ${codeBlock("terminal", INSTALL)}
-      ${codeBlock("index.html", `<clay-button color="teal">\n  <ui-button><button>Get started</button></ui-button>\n</clay-button>`)}
+    <section class="features" aria-labelledby="features-title">
+      <div class="section-head">
+        <p class="eyebrow">Why ${SITE.name}</p>
+        <h2 id="features-title">Soft on the outside, solid underneath</h2>
+      </div>
+      <div class="feature-grid">${FEATURES.map(
+        (feature) => `
+        <article class="feature">
+          ${icon(feature.icon, "feature-icon")}
+          <h3>${feature.title}</h3>
+          <p>${inline(feature.text)}</p>
+        </article>`
+      ).join("")}</div>
+    </section>
+    <section class="components" aria-labelledby="components-title">
+      <div class="section-head">
+        <p class="eyebrow">Components</p>
+        <h2 id="components-title">${count} components, one verb each</h2>
+        <p class="lead">Press a button, Pour a select, Spill a menu, Pop a tooltip. Every element is a ui-sdk part you already know, with a clay body around it.</p>
+      </div>
+      ${grid()}
+    </section>
+    <section class="start" aria-labelledby="start-title">
+      <div class="section-head">
+        <p class="eyebrow">Get started</p>
+        <h2 id="start-title">Three steps to clay</h2>
+      </div>
+      <ol class="steps">
+        <li><h3>Install</h3>${codeBlock("terminal", `npm install ${SITE.package} \\\n  @ui-sdk/web @ui-sdk/core`)}</li>
+        <li><h3>Import what you use</h3>${codeBlock("main.ts", `import "@ui-sdk/core/web.css"\nimport "${SITE.package}/clay.css"\nimport "${SITE.package}/button"`)}</li>
+        <li><h3>Write HTML</h3>${codeBlock("index.html", `<clay-button color="teal">\n  <ui-button><button>Save</button></ui-button>\n</clay-button>`)}</li>
+      </ol>
+    </section>
+    <section class="cta" aria-labelledby="cta-title">
+      <clay-card color="teal" class="cta-card">
+        <h2 id="cta-title">Give your interface some clay.</h2>
+        <p>Read the docs, tune the material in the playground, or see a whole app built from the components.</p>
+        <div class="hero-actions">
+          <clay-button size="lg"><ui-button><a href="/docs/introduction">Read the docs</a></ui-button></clay-button>
+          <clay-button size="lg" color="lilac"><ui-button><a href="/playground">Open the playground</a></ui-button></clay-button>
+          <clay-button size="lg" color="peach"><ui-button><a href="/showcase.html">See the showcase</a></ui-button></clay-button>
+        </div>
+      </clay-card>
     </section>`
 }
 
@@ -197,4 +332,4 @@ function notFound() {
   return `<article class="doc"><h1>Not found</h1><p class="lead">That page isn't here. <a href="/docs">Back to the docs</a>.</p></article>`
 }
 
-export { changelog, docPage, home, notFound, slugify }
+export { changelog, docPage, home, notFound, plain, slugify }

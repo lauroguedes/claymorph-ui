@@ -1,6 +1,6 @@
-# Clay UI
+# Claymorph UI
 
-> Clay UI is a set of web components with a soft clay body drawn by one WebGL2 shader, with behaviour from ui-sdk. Each is named for the one thing it does. Without WebGL2 the same clay is drawn with CSS shadows.
+> Claymorph UI is a set of web components with a soft clay body drawn by one WebGL2 shader, with behaviour from ui-sdk. Each is named for the one thing it does. Without WebGL2 the same clay is drawn with CSS shadows.
 
 ## Rules for AI agents
 

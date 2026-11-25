@@ -41,13 +41,17 @@ interface Release {
 }
 
 const SITE = {
-  name: "Clay UI",
+  name: "Claymorph UI",
   tagline: "Clay that gives when you press it.",
   summary:
-    "Clay UI is a set of web components with a soft clay body drawn by one WebGL2 shader, with behaviour from ui-sdk. Each is named for the one thing it does. Without WebGL2 the same clay is drawn with CSS shadows.",
+    "Claymorph UI is a set of web components with a soft clay body drawn by one WebGL2 shader, with behaviour from ui-sdk. Each is named for the one thing it does. Without WebGL2 the same clay is drawn with CSS shadows.",
   source: "https://github.com/lauroguedes/claymorph-ui",
+  /** Where the site is published: canonical links, the sitemap and social cards start here. */
+  url: "https://claymorph-ui.lauroguedes.dev",
   /** The npm package the site and its code samples import. */
   package: "claymorph-ui",
+  npm: "https://www.npmjs.com/package/claymorph-ui",
+  author: "Lauro Guedes",
 }
 
 const COMMON_API: Row[] = [
@@ -81,7 +85,7 @@ const PAGES: DocPage[] = [
     blocks: [
       {
         type: "p",
-        text: "Clay UI gives ui-sdk's web components a clay body. You keep writing the ui-sdk parts you know, like `<ui-button>` or `<ui-switch>`, and wrap them in a clay element. The wrapper adds the material and the motion; the keyboard, focus, ARIA and form behaviour stay in ui-sdk.",
+        text: "Claymorph UI gives ui-sdk's web components a clay body. You keep writing the ui-sdk parts you know, like `<ui-button>` or `<ui-switch>`, and wrap them in a clay element. The wrapper adds the material and the motion; the keyboard, focus, ARIA and form behaviour stay in ui-sdk.",
       },
       {
         type: "p",
@@ -207,7 +211,7 @@ getClayEngine()?.invalidateAll()`,
       { type: "h", text: "Agents on the page" },
       {
         type: "p",
-        text: "Clay elements only add a body; the ui-sdk parts inside them stay what an agent sees. `createAgent` from `@ui-sdk/web/agent` lists and operates every Clay UI control by its name, and `registerTools` publishes the same tools over WebMCP. This site registers them, so a browser agent can press the demos.",
+        text: "Clay elements only add a body; the ui-sdk parts inside them stay what an agent sees. `createAgent` from `@ui-sdk/web/agent` lists and operates every Claymorph UI control by its name, and `registerTools` publishes the same tools over WebMCP. This site registers them, so a browser agent can press the demos.",
       },
       {
         type: "code",
@@ -221,7 +225,7 @@ registerTools(agent, { allow: () => true })`,
       {
         type: "code",
         title: "prompt",
-        code: `Read /llms.txt. Build a settings panel with Clay UI: a Slide for the theme,
+        code: `Read /llms.txt. Build a settings panel with Claymorph UI: a Slide for the theme,
 a Flip for notifications, a Stretch for volume and a Roll to save.`,
       },
     ],
@@ -1568,7 +1572,7 @@ const RELEASES: Release[] = [
     date: "2026-11-25",
     title: "Packaged",
     changes: [
-      { kind: "new", text: "Clay UI installs from npm as `claymorph-ui`, MIT licensed, with `@ui-sdk/web` and `@ui-sdk/core` as peer dependencies." },
+      { kind: "new", text: "Claymorph UI installs from npm as `claymorph-ui`, MIT licensed, with `@ui-sdk/web` and `@ui-sdk/core` as peer dependencies." },
       { kind: "new", text: "One entry per element, like `claymorph-ui/select`: it registers that element and the ui-sdk parts it wraps, and bundlers leave out the rest. `claymorph-ui` still registers everything." },
       { kind: "new", text: "Types ship with the package, and each entry adds its element to `HTMLElementTagNameMap`." },
       { kind: "improved", text: "The stylesheet is its own import, `claymorph-ui/clay.css`: importing the elements no longer loads it." },

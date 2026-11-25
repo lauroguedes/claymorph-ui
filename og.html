@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1280" />
+    <meta name="robots" content="noindex" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+    <title>Social cards · Claymorph UI</title>
+    <style>
+      body { margin: 0; background: #0f1319; color: #eef2f6; font: 14px/1.5 Nunito, system-ui, sans-serif; }
+      og-clay { position: absolute; left: -20000px; top: 0; display: block; }
+      #out { padding: 24px; display: grid; gap: 12px; }
+      #out canvas { width: 600px; height: auto; border-radius: 8px; }
+    </style>
+  </head>
+  <body>
+    <og-clay></og-clay>
+    <div id="out"><p id="status">Drawing…</p></div>
+    <script type="module" src="/src/og/main.ts"></script>
+  </body>
+</html>

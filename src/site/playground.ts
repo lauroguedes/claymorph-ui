@@ -1,4 +1,8 @@
-import { CLAY, CLAY_DEFAULTS, getClayEngine, type ClayActionButton, type ClayConfig } from "claymorph-ui"
+import type { ClayActionButton } from "claymorph-ui/action-button"
+// The config and engine modules themselves, not the package: the markup is also rendered at build time,
+// where the elements can't load.
+import { CLAY, CLAY_DEFAULTS, type ClayConfig } from "../clay/config"
+import { getClayEngine } from "../clay/engine"
 import { escape } from "./code"
 
 interface Knob {
@@ -62,6 +66,8 @@ const GROUPS: Array<{ title: string; knobs: Knob[] }> = [
 const STORE = "clay-playground-v1"
 
 function load() {
+  // Rendering ahead of time, there's nothing saved to load.
+  if (typeof document === "undefined") return
   try {
     const saved = JSON.parse(localStorage.getItem(STORE) ?? "{}") as Partial<ClayConfig>
     for (const key of Object.keys(CLAY) as Array<keyof ClayConfig>) {

@@ -1,7 +1,7 @@
 {
   "name": "claymorph-ui",
   "version": "0.4.0",
-  "description": "Soft clay web components drawn by one WebGL2 shader, built on ui-sdk for keyboard, focus and ARIA.",
+  "description": "Claymorphism web components drawn by one WebGL2 shader, accessible by default with ui-sdk.",
   "keywords": [
     "web-components",
     "custom-elements",
@@ -17,7 +17,7 @@
     "url": "git+https://github.com/lauroguedes/claymorph-ui.git",
     "directory": "packages/claymorph-ui"
   },
-  "homepage": "https://github.com/lauroguedes/claymorph-ui#readme",
+  "homepage": "https://claymorph-ui.lauroguedes.dev",
   "bugs": {
     "url": "https://github.com/lauroguedes/claymorph-ui/issues"
   },

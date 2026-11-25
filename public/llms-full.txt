@@ -1,6 +1,6 @@
-# Clay UI
+# Claymorph UI
 
-> Clay UI is a set of web components with a soft clay body drawn by one WebGL2 shader, with behaviour from ui-sdk. Each is named for the one thing it does. Without WebGL2 the same clay is drawn with CSS shadows.
+> Claymorph UI is a set of web components with a soft clay body drawn by one WebGL2 shader, with behaviour from ui-sdk. Each is named for the one thing it does. Without WebGL2 the same clay is drawn with CSS shadows.
 
 ## Rules for AI agents
 
@@ -15,7 +15,7 @@
 
 Soft clay web components. One WebGL2 shader draws every surface, ui-sdk does the behaviour, and CSS draws the same clay when WebGL2 isn't there.
 
-Clay UI gives ui-sdk's web components a clay body. You keep writing the ui-sdk parts you know, like `<ui-button>` or `<ui-switch>`, and wrap them in a clay element. The wrapper adds the material and the motion; the keyboard, focus, ARIA and form behaviour stay in ui-sdk.
+Claymorph UI gives ui-sdk's web components a clay body. You keep writing the ui-sdk parts you know, like `<ui-button>` or `<ui-switch>`, and wrap them in a clay element. The wrapper adds the material and the motion; the keyboard, focus, ARIA and form behaviour stay in ui-sdk.
 
 Every component is named for **one verb**, so picking one takes a second:
 
@@ -137,7 +137,7 @@ Machine-readable docs, a skill, and an agent bridge.
 
 ## Agents on the page
 
-Clay elements only add a body; the ui-sdk parts inside them stay what an agent sees. `createAgent` from `@ui-sdk/web/agent` lists and operates every Clay UI control by its name, and `registerTools` publishes the same tools over WebMCP. This site registers them, so a browser agent can press the demos.
+Clay elements only add a body; the ui-sdk parts inside them stay what an agent sees. `createAgent` from `@ui-sdk/web/agent` lists and operates every Claymorph UI control by its name, and `registerTools` publishes the same tools over WebMCP. This site registers them, so a browser agent can press the demos.
 
 ```ts
 import { createAgent, registerTools } from "@ui-sdk/web/agent"
@@ -149,7 +149,7 @@ registerTools(agent, { allow: () => true })
 ## A prompt that works
 
 ```text
-Read /llms.txt. Build a settings panel with Clay UI: a Slide for the theme,
+Read /llms.txt. Build a settings panel with Claymorph UI: a Slide for the theme,
 a Flip for notifications, a Stretch for volume and a Roll to save.
 ```
 

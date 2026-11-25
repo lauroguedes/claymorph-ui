@@ -2,7 +2,7 @@
 
 Soft clay web components. One WebGL2 shader draws every surface, ui-sdk does the behaviour, and CSS draws the same clay when WebGL2 isn't there.
 
-Clay UI gives ui-sdk's web components a clay body. You keep writing the ui-sdk parts you know, like `<ui-button>` or `<ui-switch>`, and wrap them in a clay element. The wrapper adds the material and the motion; the keyboard, focus, ARIA and form behaviour stay in ui-sdk.
+Claymorph UI gives ui-sdk's web components a clay body. You keep writing the ui-sdk parts you know, like `<ui-button>` or `<ui-switch>`, and wrap them in a clay element. The wrapper adds the material and the motion; the keyboard, focus, ARIA and form behaviour stay in ui-sdk.
 
 Every component is named for **one verb**, so picking one takes a second:
 

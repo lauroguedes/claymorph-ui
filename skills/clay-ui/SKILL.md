@@ -1,9 +1,9 @@
 ---
 name: clay-ui
-description: Builds interfaces with Clay UI, soft clay web components drawn by one WebGL2 shader on top of ui-sdk. Use when a project depends on claymorph-ui, has src/clay/, or mentions Clay UI, claymorphism components, or any of its verbs - Press (button), Roll (async action button), Latch (toggle), Fuse (button group), Drag (slide to confirm), Type (input), Slide (segmented control), Flip (switch), Tick (checkbox), Pick (radio group), Stretch (slider), Pour (select), Shift (tabs), Spill (menu), Unfold (popover), Lift (dialog), Pop (tooltip), Drop (toast), Hold (card), Stamp (badge), Frame (avatar), Fill (progress), Gauge (meter).
+description: Builds interfaces with Claymorph UI, soft clay web components drawn by one WebGL2 shader on top of ui-sdk. Use when a project depends on claymorph-ui, has src/clay/, or mentions Claymorph UI, claymorphism components, or any of its verbs - Press (button), Roll (async action button), Latch (toggle), Fuse (button group), Drag (slide to confirm), Type (input), Slide (segmented control), Flip (switch), Tick (checkbox), Pick (radio group), Stretch (slider), Pour (select), Shift (tabs), Spill (menu), Unfold (popover), Lift (dialog), Pop (tooltip), Drop (toast), Hold (card), Stamp (badge), Frame (avatar), Fill (progress), Gauge (meter).
 ---
 
-# Clay UI
+# Claymorph UI
 
 Clay elements give ui-sdk's web components a clay body. The ui-sdk part inside keeps the behaviour, the name and the events; the clay element only adds the material and the motion.
 

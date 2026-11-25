@@ -1,11 +1,10 @@
 import { codeBlock } from "./code"
 
+// Markup and source only: this module also renders pages at build time, where the demos can't run.
 const markup = import.meta.glob<string>("./demos/*.html", { query: "?raw", import: "default", eager: true })
-const scripts = import.meta.glob<(root: HTMLElement) => void>("./demos/*.ts", { import: "default", eager: true })
 const scriptSource = import.meta.glob<string>("./demos/*.ts", { query: "?raw", import: "default", eager: true })
 
 const html = (id: string) => markup[`./demos/${id}.html`]
-const script = (id: string) => scripts[`./demos/${id}.ts`]
 const source = (id: string) => scriptSource[`./demos/${id}.ts`]
 
 let previews = 0
@@ -36,10 +35,4 @@ function preview(id: string, title: string) {
     </ui-tabs>`
 }
 
-function mountDemos(root: ParentNode) {
-  for (const stage of root.querySelectorAll<HTMLElement>("[data-demo]")) {
-    script(stage.dataset.demo!)?.(stage)
-  }
-}
-
-export { html as demoHtml, mountDemos, preview }
+export { html as demoHtml, preview }

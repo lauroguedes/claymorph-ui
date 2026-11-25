@@ -3,63 +3,17 @@ import "@ui-sdk/web/tabs"
 import { createAgent, registerTools } from "@ui-sdk/web/agent"
 import "claymorph-ui"
 import "claymorph-ui/clay.css"
+import type { ClayActionButton } from "claymorph-ui/action-button"
 import { wireCopy } from "./code"
-import { componentPages, PAGES, SECTIONS, SITE } from "./content"
-import { mountDemos } from "./demos"
-import { changelog, docPage, home, notFound } from "./pages"
-import { mountPlayground, playground } from "./playground"
+import { SITE } from "./content"
+import { mountDemos } from "./demo-scripts"
+import "./logo"
+import { mountPlayground } from "./playground"
+import { headTags } from "./seo"
+import { layout, route, type View } from "./shell"
 import "./site.css"
 
 const app = document.querySelector<HTMLElement>("#app")!
-
-const LOGO = `<svg viewBox="0 0 32 32" aria-hidden="true"><defs><radialGradient id="logo" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#bfe6e3"/><stop offset=".6" stop-color="#4e9fa3"/><stop offset="1" stop-color="#2a6f78"/></radialGradient></defs><path d="M16 3c7 0 13 4.5 13 12.5S23.5 29 15.5 29 3 24 3 16.5 9 3 16 3z" fill="url(#logo)"/><ellipse cx="11.5" cy="10.5" rx="4" ry="2.6" fill="#fff" opacity=".45"/></svg>`
-
-const SUN = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`
-
-function header(path: string) {
-  const link = (href: string, label: string) =>
-    `<a href="${href}"${path === href || (href !== "/" && path.startsWith(href)) ? ' aria-current="page"' : ""}>${label}</a>`
-  return `
-    <header class="site-header">
-      <a class="brand" href="/">${LOGO}<span>${SITE.name}</span></a>
-      <nav aria-label="Site">
-        ${link("/docs", "Docs")}
-        ${link("/playground", "Playground")}
-        ${link("/changelog", "Changelog")}
-        ${link("/docs/ai", "For AI")}
-        <a href="/showcase.html">Showcase</a>
-      </nav>
-      <clay-button size="sm" class="theme-toggle">
-        <ui-button><button aria-label="Switch to dark theme" data-theme-toggle>${SUN}</button></ui-button>
-      </clay-button>
-    </header>`
-}
-
-function sidebar(slug: string) {
-  const item = (page: (typeof PAGES)[number]) =>
-    `<li><a href="/docs/${page.slug}"${page.slug === slug ? ' aria-current="page"' : ""}>${page.verb ? `<span class="side-verb">${page.verb}</span>` : ""}${page.title}</a></li>`
-  return `
-    <aside class="sidebar">
-      <nav aria-label="Docs">
-        <p class="side-group">Get started</p>
-        <ul>${PAGES.filter((p) => p.group === "start").map(item).join("")}</ul>
-        <p class="side-group">Components</p>
-        ${SECTIONS.map(
-          (section) =>
-            `<p class="side-sub">${section}</p><ul>${componentPages()
-              .filter((page) => page.section === section)
-              .map(item)
-              .join("")}</ul>`
-        ).join("")}
-        <p class="side-group">Resources</p>
-        <ul>
-          <li><a href="/playground">Playground</a></li>
-          <li><a href="/changelog">Changelog</a></li>
-          <li><a href="/llms.txt">llms.txt</a></li>
-        </ul>
-      </nav>
-    </aside>`
-}
 
 function toc(root: HTMLElement) {
   const headings = [...root.querySelectorAll<HTMLHeadingElement>(".doc h2[id]")]
@@ -82,31 +36,26 @@ function toc(root: HTMLElement) {
   headings.forEach((h) => observer.observe(h))
 }
 
-function route(path: string) {
-  const clean = path.replace(/\/+$/, "") || "/"
-  if (clean === "/") return { title: SITE.name, body: home(), shell: false }
-  if (clean === "/playground") return { title: `Playground · ${SITE.name}`, body: playground(), shell: false, playground: true }
-  if (clean === "/changelog") return { title: `Changelog · ${SITE.name}`, body: changelog(), shell: "changelog" }
-  if (clean === "/docs" || clean.startsWith("/docs/")) {
-    const slug = clean === "/docs" ? "introduction" : clean.slice(6)
-    const page = PAGES.find((p) => p.slug === slug)
-    if (page) return { title: `${page.title} · ${SITE.name}`, body: docPage(page), shell: slug, description: page.description }
-  }
-  return { title: `Not found · ${SITE.name}`, body: notFound(), shell: "missing" }
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+/** Swaps the head's title, description, canonical link and social tags for the new page's. */
+function updateHead(view: View) {
+  for (const tag of document.head.querySelectorAll("[data-seo]")) tag.remove()
+  document.head.insertAdjacentHTML("beforeend", headTags(view))
 }
 
 function render(path: string, scroll = true) {
   const view = route(path)
-  document.title = view.title
-  const main = view.shell
-    ? `<div class="docs-shell">${sidebar(typeof view.shell === "string" ? view.shell : "")}<main id="main">${view.body}</main><aside class="toc" aria-label="On this page"></aside></div>`
-    : `<main id="main" class="${view.playground ? "wide" : "home"}">${view.body}</main>`
-  app.innerHTML = `<a class="skip" href="#main">Skip to content</a>${header(path)}${main}<footer class="site-footer"><p>${SITE.name} · built on <a href="https://ui-sdk.dev">ui-sdk</a> · MIT</p></footer>`
+  updateHead(view)
+  // The build already rendered this page into #app; rendering it again wires the same markup.
+  app.innerHTML = layout(view, path)
   mountDemos(app)
   wireCopy(app)
   wireTheme()
   wireCopyPage()
   wirePackageManager()
+  const save = app.querySelector<ClayActionButton>("[data-hero] clay-action-button")
+  if (save) save.action = () => wait(1400)
   if (view.playground) mountPlayground(app)
   toc(app)
   if (scroll && !location.hash) window.scrollTo(0, 0)
