@@ -1,0 +1,23 @@
+<div class="demo-row">
+  <clay-button color="teal">
+    <ui-button><button data-toast="saved">Save playlist</button></ui-button>
+  </clay-button>
+  <clay-button>
+    <ui-button><button data-toast="queue">Add to queue</button></ui-button>
+  </clay-button>
+  <clay-button color="rose">
+    <ui-button><button data-toast="error">Fail to sync</button></ui-button>
+  </clay-button>
+</div>
+
+<clay-toast-region attached>
+  <ui-toast-region>
+    <template>
+      <ui-toast>
+        <ui-toast-title></ui-toast-title>
+        <ui-toast-description></ui-toast-description>
+        <ui-toast-action><button></button></ui-toast-action>
+      </ui-toast>
+    </template>
+  </ui-toast-region>
+</clay-toast-region>

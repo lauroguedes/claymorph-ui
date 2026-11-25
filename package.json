@@ -1,0 +1,25 @@
+{
+  "name": "uisdk-playground",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "build:lib": "node scripts/build-lib.ts",
+    "pack:lib": "npm run build:lib && npm pack ./packages/claymorph-ui --pack-destination packages"
+  },
+  "devDependencies": {
+    "jsdom": "^31.0.1",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.1"
+  },
+  "dependencies": {
+    "@ui-sdk/core": "^0.1.0-beta.17",
+    "@ui-sdk/web": "^0.1.0-beta.17",
+    "lucide": "^1.79.0"
+  }
+}

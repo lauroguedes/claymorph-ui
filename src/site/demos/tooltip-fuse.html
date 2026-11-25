@@ -1,0 +1,40 @@
+<div class="demo-stack">
+  <div class="demo-row tooltip-fuse-row">
+    <clay-tooltip attached>
+      <ui-tooltip>
+        <clay-button icon color="teal">
+          <ui-tooltip-trigger>
+            <button aria-label="Shuffle">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/></svg>
+            </button>
+          </ui-tooltip-trigger>
+        </clay-button>
+        <ui-tooltip-content>Shuffle the queue</ui-tooltip-content>
+      </ui-tooltip>
+    </clay-tooltip>
+    <clay-tooltip attached>
+      <ui-tooltip>
+        <clay-button color="lilac">
+          <ui-tooltip-trigger><button>Hover me</button></ui-tooltip-trigger>
+        </clay-button>
+        <ui-tooltip-content side="bottom">It grows out of the button</ui-tooltip-content>
+      </ui-tooltip>
+    </clay-tooltip>
+  </div>
+  <clay-slider>
+    <ui-field>
+      <ui-slider default-value="0" min="0" max="1" step="0.05" aria-label="Fuse">
+        <div class="clay-slider-head">
+          <ui-field-label>fuse</ui-field-label>
+          <ui-slider-value></ui-slider-value>
+        </div>
+        <ui-slider-control>
+          <ui-slider-track>
+            <ui-slider-indicator></ui-slider-indicator>
+            <ui-slider-thumb></ui-slider-thumb>
+          </ui-slider-track>
+        </ui-slider-control>
+      </ui-slider>
+    </ui-field>
+  </clay-slider>
+</div>

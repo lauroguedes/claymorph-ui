@@ -1,0 +1,30 @@
+<div class="demo-stack fuse-demo">
+  <clay-slider>
+    <ui-field>
+      <ui-slider default-value="0" min="0" max="1" step="0.05" aria-label="Fuse">
+        <div class="clay-slider-head">
+          <ui-field-label>fuse</ui-field-label>
+          <ui-slider-value></ui-slider-value>
+        </div>
+        <ui-slider-control>
+          <ui-slider-track>
+            <ui-slider-indicator></ui-slider-indicator>
+            <ui-slider-thumb></ui-slider-thumb>
+          </ui-slider-track>
+        </ui-slider-control>
+      </ui-slider>
+    </ui-field>
+  </clay-slider>
+  <clay-select attached color="teal">
+    <ui-select default-value="month">
+      <ui-select-label>Period</ui-select-label>
+      <ui-select-trigger><button><ui-select-value></ui-select-value></button></ui-select-trigger>
+      <ui-select-content>
+        <ui-select-item value="day">Today</ui-select-item>
+        <ui-select-item value="week">This week</ui-select-item>
+        <ui-select-item value="month">This month</ui-select-item>
+        <ui-select-item value="year">This year</ui-select-item>
+      </ui-select-content>
+    </ui-select>
+  </clay-select>
+</div>

@@ -1,0 +1,50 @@
+# Clay UI
+
+> Clay UI is a set of web components with a soft clay body drawn by one WebGL2 shader, with behaviour from ui-sdk. Each is named for the one thing it does. Without WebGL2 the same clay is drawn with CSS shadows.
+
+## Rules for AI agents
+
+- Wrap ui-sdk parts in a clay element: `<clay-button><ui-button><button>…</button></ui-button></clay-button>`. Keep the ui-sdk part's own markup inside it exactly as its docs show.
+- Never recreate the clay with your own `box-shadow`, canvas or SVG. The elements draw it with WebGL2 and fall back to CSS by themselves.
+- Import once: `import "@ui-sdk/core/web.css"` then `import "./clay"` (the copied `src/clay/` folder).
+- Colour with the `color` attribute (a preset or any CSS colour) or the `--clay-*` variables. Tune the material with the `CLAY` object.
+- Pick by verb: Press → `<clay-button>`, Roll → `<clay-action-button>`, Latch → `<clay-toggle>`, Fuse → `<clay-button-group>`, Drag → `<clay-slide-confirm>`, Type → `<clay-input>`, Slide → `<clay-segmented>`, Flip → `<clay-switch>`, Tick → `<clay-checkbox>`, Pick → `<clay-radio>`, Stretch → `<clay-slider>`, Pour → `<clay-select>`, Shift → `<clay-tabs>`, Spill → `<clay-menu>`, Unfold → `<clay-popover>`, Lift → `<clay-dialog>`, Pop → `<clay-tooltip>`, Drop → `<clay-toast-region>`, Hold → `<clay-card>`, Stamp → `<clay-badge>`, Frame → `<clay-avatar>`, Fill → `<clay-progress>`, Gauge → `<clay-meter>`.
+- Behaviour, events and names come from the ui-sdk part inside: listen on `<ui-button>`, `<ui-switch>` and so on, and name every control.
+
+## Get started
+
+- [Introduction](/docs/introduction.md): Soft clay web components. One WebGL2 shader draws every surface, ui-sdk does the behaviour, and CSS draws the same clay when WebGL2 isn't there.
+- [Installation](/docs/installation.md): Install the package, load the styles once, import the elements you use.
+- [Theming](/docs/theming.md): Colour with CSS variables, tune the material with one config object.
+- [For AI](/docs/ai.md): Machine-readable docs, a skill, and an agent bridge.
+
+## Components
+
+- [Button](/docs/button.md) (Press): A clay button. It swells toward the pointer, squashes and glows when pressed, and springs back. Wraps `ui-button`.
+- [Action Button](/docs/action-button.md) (Roll): An async action. A clay bead sits beside the body; pressing it melts the bead in, it stays melted while the action runs, then turns into a check (or a cross) and rolls back out.
+- [Toggle](/docs/toggle.md) (Latch): A toggle button whose clay sinks into a coloured well while it's on, and pops back out when it's off. Wraps `ui-toggle`.
+- [Button group](/docs/button-group.md) (Fuse): Related buttons fused into one clay body. Each part swells and squashes on its own, and a pressed toggle inside sinks into a well. Wraps `ui-button` or `ui-toggle` buttons.
+- [Slide to confirm](/docs/slide-confirm.md) (Drag): A deliberate action: drag a clay ball along its groove to the end. Let go early and it rolls back; at the end it runs `.action`, then shows pending, success or error. Wraps `ui-slider`.
+- [Input](/docs/input.md) (Type): A text field carved into the clay. The well deepens while it's focused, gives a little as you type, and its rim turns red once the value is invalid. Wraps `ui-input`, `ui-input-group` or a `<textarea>`.
+- [Segmented Control](/docs/segmented.md) (Slide): Pick one of a few options. The selection is a clay bead that rolls along a groove, stretching with its speed. Wraps `ui-segmented-control`.
+- [Switch](/docs/switch.md) (Flip): On or off. The knob rolls across a groove that fills with colour, and squashes as it travels. Wraps `ui-switch`.
+- [Checkbox](/docs/checkbox.md) (Tick): A checkbox whose dent pushes up into a filled clay bump when checked, while the check draws in. Wraps `ui-checkbox`.
+- [Radio group](/docs/radio.md) (Pick): Radios carved as dents in the clay. A bead hops into the one you pick. Wraps `ui-radio-group`.
+- [Slider](/docs/slider.md) (Stretch): A slider with a clay ball that stretches with its speed, swells while held and drags a filled groove behind it. Wraps `ui-slider`.
+- [Select](/docs/select.md) (Pour): A select whose list pours out of its clay button: it grows from the trigger on a spring while the options drop in one by one, and the chosen value is wiped in out of a blur. Wraps `ui-select`.
+- [Tabs](/docs/tabs.md) (Shift): Tabs whose selection is a clay bead rolling along a groove, stretching as it travels. The panel slides in from the side the bead moved. Wraps `ui-tabs`.
+- [Menu](/docs/menu.md) (Spill): A menu of actions that spills out of its clay button as a soft slab, its items rolling in one after another. Wraps `ui-menu`.
+- [Popover](/docs/popover.md) (Unfold): A small clay card that unfolds from its button, for a few controls or a short message. Wraps `ui-popover`.
+- [Dialog](/docs/dialog.md) (Lift): A modal dialog: a thick clay slab that drops onto a blurred page and settles with a squash. Wraps `ui-dialog`.
+- [Tooltip](/docs/tooltip.md) (Pop): Names a control or adds a short hint, as a small clay tag that pops out of its side. Wraps `ui-tooltip`.
+- [Toast](/docs/toast.md) (Drop): Toasts that drop in as clay slabs and squash as they land, tinted by their type. Wraps `ui-toast-region`; call `toast()` from anywhere.
+- [Card](/docs/card.md) (Hold): A clay slab that holds content. Flatter than a button, with a deeper shadow. `interactive` makes it swell.
+- [Badge](/docs/badge.md) (Stamp): A small clay label that stamps in when it appears.
+- [Avatar](/docs/avatar.md) (Frame): An avatar set in a clay ring, with an optional status bead melted onto it. Wraps `ui-avatar`.
+- [Progress](/docs/progress.md) (Fill): A progress bar whose groove fills with a worm of clay. Without a value, a lump rolls back and forth. Wraps `ui-progress`.
+- [Meter](/docs/meter.md) (Gauge): A meter for a value in a known range, across or upright. Upright meters in a row make a clay bar chart. Wraps `ui-meter`.
+
+## Optional
+
+- [Everything in one file](/llms-full.txt)
+- [Changelog](/changelog)

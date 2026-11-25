@@ -1,0 +1,17 @@
+<clay-popover color="teal">
+  <ui-popover>
+    <ui-popover-trigger><button><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>Share</button></ui-popover-trigger>
+    <ui-popover-content>
+      <ui-popover-title>Share this playlist</ui-popover-title>
+      <ui-popover-description>Anyone with the link can listen.</ui-popover-description>
+      <clay-input size="sm">
+        <ui-input><input aria-label="Playlist link" value="clay.fm/p/chill-vibes" readonly /></ui-input>
+      </clay-input>
+      <div class="clay-actions">
+        <clay-button size="sm" color="teal">
+          <ui-popover-close><button>Copy link</button></ui-popover-close>
+        </clay-button>
+      </div>
+    </ui-popover-content>
+  </ui-popover>
+</clay-popover>

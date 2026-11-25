@@ -1,0 +1,1648 @@
+@layer ui-sdk;
+
+:root {
+  --clay-surface: #dde5ed;
+  --clay-knob: #f6f9fb;
+  --clay-popup: #eef3f7;
+  --clay-neutral: #e1e8ef;
+  --clay-teal: #4e9fa3;
+  --clay-lilac: #9a98d6;
+  --clay-sky: #7fb2e3;
+  --clay-peach: #f4ad8d;
+  --clay-mint: #8fd3b5;
+  --clay-butter: #f3d27c;
+  --clay-rose: #ec9cab;
+  --clay-slate: #51647f;
+  --clay-ink: #2c3648;
+  --clay-success: #74cca3;
+  --clay-danger: #ee8e8e;
+  --clay-text: #1d2a3a;
+  --clay-text-soft: #475769;
+  --clay-ring: #2a6f78;
+  --clay-shade: #0c1626;
+  --clay-on-knob: #1d2a3a;
+  --clay-danger-text: #a4282c;
+  --clay-spring: linear(0, 0.009, 0.035 2.1%, 0.141, 0.281 6.7%, 0.723 12.9%, 0.938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%, 1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, 0.991, 0.977 51%, 0.974 53.8%, 0.975 57.1%, 0.997 69.8%, 1.003 76.9%, 1);
+}
+
+:root[data-theme="dark"] {
+  --clay-surface: #3a4659;
+  --clay-knob: #dfe6ee;
+  --clay-popup: #455268;
+  --clay-neutral: #4b586d;
+  --clay-text: #eef2f6;
+  --clay-text-soft: #cbd4de;
+  --clay-ring: #8fd3d6;
+  --clay-shade: #02050a;
+  --clay-danger-text: #ffb3b3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --clay-surface: #3a4659;
+    --clay-knob: #dfe6ee;
+    --clay-popup: #455268;
+    --clay-neutral: #4b586d;
+    --clay-text: #eef2f6;
+    --clay-text-soft: #cbd4de;
+    --clay-ring: #8fd3d6;
+    --clay-shade: #02050a;
+    --clay-danger-text: #ffb3b3;
+  }
+}
+
+[data-clay-host] {
+  isolation: isolate;
+  scale: var(--clay-sx, 1) var(--clay-sy, 1);
+}
+
+.clay-canvas {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.clay-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+:is(clay-button, clay-action-button, clay-button-group, clay-badge, clay-card, clay-tooltip, clay-menu, clay-popover, clay-dialog) {
+  color: var(--clay-text);
+
+  &[data-tone="light"] {
+    color: var(--clay-on-knob);
+  }
+
+  &[data-tone="dark"] {
+    color: #fff;
+  }
+}
+
+:where(clay-button, clay-action-button, clay-button-group, clay-badge, clay-card, clay-select, clay-tooltip, clay-menu, clay-popover, clay-dialog, clay-avatar) {
+  --clay-color: var(--clay-neutral);
+}
+
+:where(clay-switch, clay-checkbox, clay-slider, clay-toggle, clay-input, clay-radio, clay-progress, clay-meter, clay-slide-confirm) {
+  --clay-color: var(--clay-teal);
+}
+
+:where(clay-segmented, clay-tabs) {
+  --clay-color: var(--clay-knob);
+}
+
+:where(clay-tooltip) {
+  --clay-color: var(--clay-ink);
+}
+
+/* Without WebGL2, or before the first frame, the same clay is drawn with layered shadows. */
+:is(
+    clay-button,
+    clay-action-button,
+    clay-badge,
+    clay-card,
+    clay-button-group,
+    clay-avatar,
+    clay-select [data-slot="select-trigger"],
+    clay-select [data-slot="select-content"],
+    clay-tooltip [data-slot="tooltip-content"],
+    :is(clay-menu, clay-popover, clay-dialog) :is([data-slot="menu-trigger"], [data-slot="popover-trigger"], [data-slot="dialog-trigger"]),
+    clay-menu [data-slot="menu-content"],
+    clay-popover [data-slot="popover-content"],
+    clay-dialog [data-slot="dialog-content"],
+    clay-toast-region [data-slot="toast"]
+  ):not([data-clay-ready]) {
+  background: var(--clay-color);
+  box-shadow:
+    0 12px 22px -10px color-mix(in oklab, var(--clay-color), var(--clay-shade) 60%),
+    inset 4px 4px 9px color-mix(in oklab, var(--clay-color), white 50%),
+    inset -5px -6px 11px color-mix(in oklab, var(--clay-color), var(--clay-shade) 25%);
+}
+
+clay-select [data-slot="select-content"]:not([data-clay-ready]),
+clay-menu [data-slot="menu-content"]:not([data-clay-ready]),
+clay-popover [data-slot="popover-content"]:not([data-clay-ready]),
+clay-dialog [data-slot="dialog-content"]:not([data-clay-ready]),
+clay-toast-region [data-slot="toast"]:not([data-clay-ready], [data-type="success"], [data-type="error"], [data-type="warning"]) {
+  --clay-color: var(--clay-popup);
+}
+
+clay-toast-region [data-slot="toast"]:not([data-clay-ready]) {
+  &[data-type="success"] { --clay-color: var(--clay-success); }
+  &[data-type="error"] { --clay-color: var(--clay-danger); }
+  &[data-type="warning"] { --clay-color: var(--clay-butter); }
+}
+
+:is(clay-segmented, clay-switch, clay-checkbox, clay-toggle, clay-input, clay-slide-confirm, clay-tabs [data-slot="tabs-list"]):not([data-clay-ready]) {
+  border-radius: 999px;
+  background: var(--clay-surface);
+  box-shadow:
+    0 8px 16px -8px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 55%),
+    inset 2px 2px 5px color-mix(in oklab, var(--clay-surface), white 55%);
+}
+
+:is(clay-button, clay-toggle, clay-button-group, clay-menu, clay-popover, clay-dialog) {
+  --h: 44px;
+  display: inline-flex;
+  height: var(--h);
+  border-radius: 999px;
+  vertical-align: middle;
+
+  &[size="sm"] { --h: 36px; }
+  &[size="lg"] { --h: 52px; }
+  &[size="xl"] { --h: 64px; }
+
+  &[shape="rounded"] {
+    border-radius: min(calc(var(--h) * 0.34), 18px);
+  }
+}
+
+:is(clay-button, clay-toggle)[icon] {
+  width: var(--h);
+}
+
+:is(clay-button, clay-action-button, clay-toggle, clay-button-group) :is([data-slot="button"], [data-slot="toggle"], [data-slot="tooltip-trigger"], [data-slot="popover-trigger"], [data-slot="popover-close"], [data-slot="menu-trigger"], [data-slot="dialog-trigger"], [data-slot="dialog-close"]),
+:is(clay-menu, clay-popover, clay-dialog) :is([data-slot="menu-trigger"], [data-slot="popover-trigger"], [data-slot="dialog-trigger"]):not(:is([data-slot="menu-content"], [data-slot="popover-content"], [data-slot="dialog-content"]) *) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 100%;
+  padding: 0 calc(var(--h) * 0.48);
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: max(0.82rem, calc(var(--h) * 0.32));
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+
+  &:hover:not([data-disabled]) {
+    background: transparent;
+  }
+
+  &:focus-visible {
+    outline: 3px solid var(--clay-ring);
+    outline-offset: 4px;
+  }
+
+  &:is(:disabled, [data-disabled]) {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  & svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+}
+
+clay-action-button {
+  --h: 48px;
+  --gap: 6px;
+  display: inline-flex;
+  height: var(--h);
+  border-radius: 999px;
+  vertical-align: middle;
+
+  &[size="sm"] { --h: 40px; }
+  &[size="lg"] { --h: 56px; }
+
+  & [data-slot="button"] {
+    position: relative;
+    justify-content: flex-start;
+    padding: 0 calc(var(--h) + var(--gap) + 16px) 0 calc(var(--h) * 0.5);
+  }
+}
+
+.clay-action-label {
+  display: grid;
+
+  & > span {
+    grid-area: 1 / 1;
+    opacity: 0;
+    translate: 0 0.6em;
+    filter: blur(3px);
+    transition:
+      opacity 0.25s,
+      translate 0.45s var(--clay-spring),
+      filter 0.3s;
+  }
+}
+
+clay-action-button:is(:not([data-state]), [data-state="idle"]) [data-label="idle"],
+clay-action-button[data-state="pending"] [data-label="pending"],
+clay-action-button[data-state="success"] [data-label="success"],
+clay-action-button[data-state="error"] [data-label="error"] {
+  opacity: 1;
+  translate: 0 0;
+  filter: none;
+}
+
+.clay-bead {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: grid;
+  place-items: center;
+  width: var(--h);
+  height: var(--h);
+  border-radius: 50%;
+  color: inherit;
+
+  & svg {
+    grid-area: 1 / 1;
+    width: 42%;
+    height: 42%;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.6;
+    opacity: 0;
+    scale: 0.4;
+    rotate: -40deg;
+    transition:
+      opacity 0.2s,
+      scale 0.45s var(--clay-spring),
+      rotate 0.45s var(--clay-spring);
+  }
+}
+
+clay-action-button:not([data-clay-ready]) .clay-bead {
+  background: color-mix(in oklab, var(--clay-color), var(--clay-shade) 16%);
+  box-shadow:
+    inset 3px 3px 6px color-mix(in oklab, var(--clay-color), white 40%),
+    inset -3px -4px 7px color-mix(in oklab, var(--clay-color), var(--clay-shade) 30%);
+}
+
+clay-action-button:is([data-state="success"], [data-state="error"]) .clay-bead {
+  color: var(--clay-on-knob);
+}
+
+clay-action-button:is(:not([data-state]), [data-state="idle"]) [data-icon="idle"],
+clay-action-button[data-state="pending"] [data-icon="pending"],
+clay-action-button[data-state="success"] [data-icon="success"],
+clay-action-button[data-state="error"] [data-icon="error"] {
+  opacity: 1;
+  scale: 1;
+  rotate: 0deg;
+}
+
+clay-action-button[data-state="pending"] [data-icon="pending"] {
+  animation: clay-spin 0.8s linear infinite;
+}
+
+clay-action-button:is(:not([data-state]), [data-state="idle"]) [data-slot="button"]:hover [data-icon="idle"] {
+  translate: 2px 0;
+}
+
+clay-card {
+  display: block;
+  padding: 24px;
+  border-radius: var(--clay-radius, 28px);
+}
+
+clay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  vertical-align: middle;
+  animation: clay-stamp 0.55s var(--clay-spring) backwards;
+}
+
+clay-segmented {
+  display: inline-flex;
+  border-radius: 999px;
+  vertical-align: middle;
+
+  & [data-slot="segmented-control"] {
+    gap: 2px;
+    padding: 9px;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+  }
+
+  & [data-slot="segmented-control-item"] {
+    height: 34px;
+    padding-inline: 18px;
+    border-radius: 999px;
+    color: var(--clay-text-soft);
+    font-weight: 700;
+    transition: color 0.2s;
+
+    &[data-checked] {
+      color: var(--clay-on-knob);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 2px;
+    }
+  }
+
+  & [data-slot="segmented-control-indicator"] {
+    border: 0;
+    border-radius: 999px;
+    background: var(--clay-color);
+    box-shadow:
+      0 6px 10px -6px color-mix(in oklab, var(--clay-color), var(--clay-shade) 60%),
+      inset 2px 2px 4px color-mix(in oklab, var(--clay-color), white 50%);
+  }
+
+  &[data-clay-ready] [data-slot="segmented-control-indicator"] {
+    opacity: 0;
+  }
+}
+
+clay-switch {
+  --w: 56px;
+  --h: 32px;
+  display: inline-flex;
+  border-radius: 999px;
+  vertical-align: middle;
+
+  &[size="sm"] { --w: 46px; --h: 26px; }
+  &[size="lg"] { --w: 68px; --h: 38px; }
+
+  & [data-slot="switch"] {
+    width: var(--w);
+    height: var(--h);
+    padding: 5px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+
+    &[data-checked] {
+      background: transparent;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 3px;
+    }
+  }
+
+  & [data-slot="switch-thumb"] {
+    width: calc(var(--h) - 10px);
+    height: calc(var(--h) - 10px);
+    background: var(--clay-knob);
+    box-shadow: 0 3px 6px -2px rgb(12 22 38 / 0.45);
+    transition: margin 0.3s var(--clay-spring);
+  }
+
+  &:not([data-clay-ready]) [data-slot="switch"][data-checked] {
+    background: var(--clay-color);
+  }
+
+  &[data-clay-ready] [data-slot="switch-thumb"] {
+    opacity: 0;
+  }
+}
+
+clay-checkbox {
+  display: inline-flex;
+  border-radius: 9px;
+  vertical-align: middle;
+
+  & [data-slot="checkbox"] {
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: #fff;
+
+    &[data-checked] {
+      background: transparent;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 3px;
+    }
+  }
+
+  &:not([data-clay-ready]) [data-slot="checkbox"][data-checked] {
+    background: var(--clay-color);
+  }
+
+  & [data-slot="checkbox-indicator"] svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.25));
+    transition: stroke-dashoffset 0.35s 0.08s ease-out;
+  }
+
+  & [data-checked] [data-slot="checkbox-indicator"] svg {
+    stroke-dashoffset: 0;
+  }
+}
+
+clay-slider {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+
+  & [data-slot="slider"] {
+    min-width: 0;
+  }
+
+  & [data-slot="slider-control"] {
+    height: 44px;
+    padding-inline: 16px;
+  }
+
+  & [data-slot="slider-track"] {
+    position: relative;
+    height: 12px;
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--clay-surface), var(--clay-shade) 12%);
+    box-shadow: inset 2px 2px 4px rgb(12 22 38 / 0.25);
+  }
+
+  & [data-slot="slider-indicator"] {
+    background: var(--clay-color);
+  }
+
+  & [data-slot="slider-thumb"] {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    background: var(--clay-knob);
+    box-shadow: 0 5px 10px -4px rgb(12 22 38 / 0.5);
+
+    &:has(:focus-visible) {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 3px;
+    }
+  }
+
+  & [data-slot="slider-value"] {
+    color: var(--clay-text-soft);
+    font-family: var(--ui-font-mono, ui-monospace, monospace);
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  & .clay-slider-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-inline: 4px;
+  }
+
+  & [data-slot="field-label"] {
+    color: var(--clay-text);
+    font-weight: 800;
+  }
+
+  &[data-clay-ready] {
+    & [data-slot="slider-track"],
+    & [data-slot="slider-indicator"],
+    & [data-slot="slider-thumb"] {
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+}
+
+clay-select {
+  display: inline-grid;
+  gap: 8px;
+
+  & [data-slot="select-label"] {
+    color: var(--clay-text-soft);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  & [data-slot="select-value"] {
+    display: inline-block;
+  }
+
+  & .clay-select-ghost {
+    position: absolute;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  & [data-slot="select-trigger"] {
+    position: relative;
+    height: 46px;
+    min-width: 12rem;
+    padding-inline: 18px 14px;
+    border: 0;
+    border-radius: 18px;
+    color: var(--clay-text);
+    font-weight: 800;
+
+    &[data-clay-ready] {
+      background: transparent;
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 4px;
+    }
+  }
+
+  & [data-slot="select-content"] {
+    max-height: none;
+    padding: 8px;
+    overflow: visible;
+    border: 0;
+    border-radius: 22px;
+    color: var(--clay-text);
+    transform-origin: var(--transform-origin);
+    transition:
+      scale 0.5s var(--clay-spring),
+      opacity 0.18s;
+
+    &[data-clay-ready] {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    &:is([data-starting-style], [data-ending-style], [data-closed]) {
+      scale: 0.82 0.5;
+      opacity: 0;
+    }
+
+    & [data-slot="select-item"] {
+      min-height: 38px;
+      padding-inline: 12px;
+      border-radius: 14px;
+      font-weight: 700;
+      transition:
+        translate 0.4s var(--clay-spring),
+        opacity 0.3s,
+        background 0.15s;
+      transition-delay: calc(var(--clay-i, 0) * 28ms), calc(var(--clay-i, 0) * 28ms), 0s;
+
+      &[data-highlighted] {
+        background: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 8%);
+        box-shadow:
+          inset 2px 2px 4px color-mix(in oklab, var(--clay-popup), var(--clay-shade) 18%),
+          inset -2px -2px 4px color-mix(in oklab, var(--clay-popup), white 60%);
+      }
+
+      &[data-selected] {
+        color: var(--clay-ring);
+        font-weight: 800;
+      }
+    }
+
+    &[data-starting-style] [data-slot="select-item"] {
+      translate: 0 -10px;
+      opacity: 0;
+    }
+  }
+}
+
+clay-tooltip [data-slot="tooltip-content"] {
+  padding: 7px 12px;
+  border-radius: 12px;
+  color: inherit;
+  font-weight: 700;
+  transform-origin: var(--transform-origin);
+  transition:
+    scale 0.4s var(--clay-spring),
+    opacity 0.15s;
+
+  &[data-clay-ready] {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  &:is([data-starting-style], [data-ending-style], [data-closed]) {
+    scale: 0.6;
+    opacity: 0;
+  }
+}
+
+/* Icon-only buttons and triggers: square, no padding. */
+:is(clay-button, clay-toggle, clay-menu, clay-popover, clay-dialog)[icon] :is([data-slot="button"], [data-slot="toggle"], [data-slot="tooltip-trigger"], [data-slot="popover-trigger"], [data-slot="menu-trigger"], [data-slot="dialog-trigger"]) {
+  width: var(--h);
+  padding: 0;
+}
+
+:is(clay-menu, clay-popover, clay-dialog) :is([data-slot="menu-trigger"], [data-slot="popover-trigger"], [data-slot="dialog-trigger"]):not(:is([data-slot="menu-content"], [data-slot="popover-content"], [data-slot="dialog-content"]) *) {
+  border-radius: 999px;
+}
+
+/* Latch */
+clay-toggle {
+  color: var(--clay-text);
+
+  & [data-slot="toggle"] {
+    transition: color 0.2s;
+
+    &[data-pressed] {
+      background: transparent;
+    }
+  }
+
+  &[data-pressed="true"] {
+    &[data-tone="dark"] { color: #fff; }
+    &[data-tone="light"] { color: var(--clay-on-knob); }
+  }
+
+  &:not([data-clay-ready]):has([aria-pressed="true"]) {
+    background: var(--clay-color);
+    box-shadow:
+      inset 3px 4px 8px color-mix(in oklab, var(--clay-color), var(--clay-shade) 40%),
+      inset -2px -2px 5px color-mix(in oklab, var(--clay-color), white 35%);
+  }
+}
+
+/* Fuse */
+clay-button-group {
+  & :is([data-slot="button"], [data-slot="toggle"]) {
+    min-width: var(--h);
+    padding: 0 calc(var(--h) * 0.4);
+    border-radius: 999px;
+
+    &[aria-pressed="true"] {
+      background: transparent;
+    }
+  }
+
+  &:not([data-clay-ready]) :is([data-slot="button"], [data-slot="toggle"]) + :is([data-slot="button"], [data-slot="toggle"]),
+  &:not([data-clay-ready]) > * + * {
+    box-shadow: inset 1px 0 0 color-mix(in oklab, var(--clay-color), var(--clay-shade) 22%);
+  }
+}
+
+/* Shift */
+clay-tabs {
+  display: block;
+
+  & [data-slot="tabs"][data-orientation="vertical"] {
+    gap: 20px;
+  }
+
+  & [data-slot="tabs-list"] {
+    display: inline-flex;
+    align-self: flex-start;
+    gap: 2px;
+    padding: 9px;
+    border: 0;
+    border-radius: 999px;
+
+    &[data-orientation="vertical"] {
+      flex-direction: column;
+      align-items: stretch;
+      border: 0;
+      border-radius: 24px;
+    }
+  }
+
+  & [data-slot="tabs-tab"] {
+    justify-content: flex-start;
+    height: 38px;
+    margin: 0;
+    padding-inline: 18px;
+    border: 0;
+    border-radius: 999px;
+    color: var(--clay-text-soft);
+    font-weight: 750;
+    transition: color 0.2s;
+
+    &[data-orientation="vertical"] {
+      margin: 0;
+      border: 0;
+    }
+
+    &:hover:not([data-disabled], [data-selected]) {
+      color: var(--clay-text);
+    }
+
+    &[data-selected] {
+      color: var(--clay-on-knob);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 2px;
+    }
+
+    & svg {
+      width: 1.15em;
+      height: 1.15em;
+    }
+  }
+
+  &[data-tone="dark"] [data-slot="tabs-tab"][data-selected] {
+    color: #fff;
+  }
+
+  &:not(:has([data-slot="tabs-list"][data-clay-ready])) [data-slot="tabs-tab"][data-selected] {
+    background: var(--clay-color);
+    box-shadow:
+      0 6px 10px -6px color-mix(in oklab, var(--clay-color), var(--clay-shade) 60%),
+      inset 2px 2px 4px color-mix(in oklab, var(--clay-color), white 50%);
+  }
+
+  & [data-slot="tabs-panel"] {
+    padding-top: 18px;
+    outline: none;
+    transition:
+      opacity 0.3s,
+      translate 0.5s var(--clay-spring);
+
+    &[data-orientation="vertical"] {
+      padding: 0;
+    }
+
+    &[data-starting-style] {
+      opacity: 0;
+
+      &[data-activation-direction="right"] { translate: 24px 0; }
+      &[data-activation-direction="left"] { translate: -24px 0; }
+      &[data-activation-direction="down"] { translate: 0 20px; }
+      &[data-activation-direction="up"] { translate: 0 -20px; }
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 4px;
+      border-radius: 12px;
+    }
+  }
+}
+
+/* Spill, Unfold and Lift: popups */
+:is(clay-menu [data-slot="menu-content"], clay-popover [data-slot="popover-content"], clay-dialog [data-slot="dialog-content"]) {
+  overflow: visible;
+  border: 0;
+  color: var(--clay-text);
+
+  &[data-clay-ready] {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+clay-menu [data-slot="menu-content"] {
+  min-width: 12rem;
+  max-height: none;
+  padding: 8px;
+  border-radius: 20px;
+  transform-origin: var(--transform-origin);
+  transition:
+    scale 0.5s var(--clay-spring),
+    opacity 0.18s;
+
+  &:is([data-starting-style], [data-ending-style], [data-closed]) {
+    scale: 0.7 0.4;
+    opacity: 0;
+  }
+
+  & :is([data-slot="menu-item"], [data-slot="menu-checkbox-item"], [data-slot="menu-radio-item"]) {
+    gap: 10px;
+    min-height: 38px;
+    padding-inline: 12px;
+    border-radius: 13px;
+    font-weight: 700;
+    transition:
+      translate 0.4s var(--clay-spring),
+      opacity 0.3s,
+      background 0.15s;
+    transition-delay: calc(var(--clay-i, 0) * 26ms), calc(var(--clay-i, 0) * 26ms), 0s;
+
+    &[data-highlighted] {
+      background: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 8%);
+      box-shadow:
+        inset 2px 2px 4px color-mix(in oklab, var(--clay-popup), var(--clay-shade) 18%),
+        inset -2px -2px 4px color-mix(in oklab, var(--clay-popup), white 60%);
+    }
+
+    &[variant="danger"] {
+      color: var(--clay-danger-text);
+    }
+
+    & svg {
+      width: 1.05em;
+      height: 1.05em;
+    }
+  }
+
+  &[data-starting-style] :is([data-slot="menu-item"], [data-slot="menu-checkbox-item"], [data-slot="menu-radio-item"]) {
+    translate: 0 -8px;
+    opacity: 0;
+  }
+
+  & [data-slot="menu-separator"] {
+    height: 3px;
+    margin: 6px 10px;
+    border: 0;
+    border-radius: 3px;
+    background: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 10%);
+    box-shadow: 0 1px 0 color-mix(in oklab, var(--clay-popup), white 60%);
+  }
+
+  & [data-slot="menu-group-label"] {
+    padding: 6px 12px 2px;
+    color: var(--clay-text-soft);
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  & [data-slot="menu-shortcut"] {
+    margin-inline-start: auto;
+    color: var(--clay-text-soft);
+    font-size: 0.8rem;
+  }
+}
+
+clay-popover [data-slot="popover-content"] {
+  gap: 10px;
+  max-width: 21rem;
+  padding: 22px;
+  border-radius: 26px;
+  transform-origin: var(--transform-origin);
+  transition:
+    scale 0.55s var(--clay-spring),
+    opacity 0.2s;
+
+  &:is([data-starting-style], [data-ending-style], [data-closed]) {
+    scale: 0.5 0.25;
+    opacity: 0;
+  }
+
+  & > :not(.clay-canvas) {
+    transition:
+      opacity 0.3s 0.08s,
+      translate 0.45s 0.06s var(--clay-spring);
+  }
+
+  &[data-starting-style] > :not(.clay-canvas) {
+    translate: 0 8px;
+    opacity: 0;
+  }
+}
+
+:is(clay-popover [data-slot="popover-title"], clay-dialog [data-slot="dialog-title"]) {
+  margin: 0;
+  color: var(--clay-text);
+  font-size: 1.08rem;
+  font-weight: 850;
+}
+
+clay-dialog [data-slot="dialog-title"] {
+  font-size: 1.35rem;
+}
+
+:is(clay-popover [data-slot="popover-description"], clay-dialog [data-slot="dialog-description"]) {
+  margin: 0;
+  color: var(--clay-text-soft);
+  font-weight: 600;
+}
+
+clay-dialog [data-slot="dialog-backdrop"] {
+  background: color-mix(in oklab, var(--clay-shade) 30%, transparent);
+  backdrop-filter: blur(6px) saturate(1.2);
+  transition: opacity 0.3s;
+
+  &:is([data-starting-style], [data-ending-style], [data-closed]) {
+    opacity: 0;
+  }
+}
+
+clay-dialog [data-slot="dialog-content"] {
+  gap: 14px;
+  padding: 30px;
+  border-radius: 32px;
+  transition:
+    translate 0.6s var(--clay-spring),
+    scale 0.6s var(--clay-spring),
+    opacity 0.2s;
+
+  &[data-starting-style] {
+    translate: 0 -48px;
+    scale: 1.04 0.86;
+    opacity: 0;
+  }
+
+  /* data-closed stays on after the ending style comes off, a frame before ui-sdk hides it. */
+  &:is([data-ending-style], [data-closed]) {
+    translate: 0 24px;
+    scale: 0.94;
+    opacity: 0;
+  }
+}
+
+.clay-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Drop */
+clay-toast-region {
+  display: contents;
+
+  & [data-slot="toast-region"] {
+    width: 22rem;
+  }
+
+  & [data-slot="toast-list"] {
+    gap: 14px;
+  }
+
+  & [data-slot="toast"] {
+    padding: 16px 18px;
+    border: 0;
+    border-radius: 22px;
+    color: var(--clay-text);
+    transition:
+      translate 0.55s var(--clay-spring),
+      opacity 0.25s,
+      scale 0.4s;
+
+    &[data-clay-ready] {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    &:is([data-type="success"], [data-type="error"], [data-type="warning"]) {
+      color: var(--clay-on-knob);
+    }
+
+    /* Leaving runs the way in backwards: back toward the edge it dropped from. */
+    &:is([data-starting-style], [data-ending-style]) {
+      translate: 0 40px;
+      opacity: 0;
+    }
+
+    &[data-ending-style] {
+      transition:
+        translate 0.42s cubic-bezier(0.5, -0.4, 0.8, 0.6),
+        opacity 0.3s 0.1s;
+    }
+  }
+
+  & [data-slot="toast-region"][data-side="top"] [data-slot="toast"]:is([data-starting-style], [data-ending-style]) {
+    translate: 0 -40px;
+  }
+
+  &[attached] {
+    & [data-slot="toast-list"] {
+      gap: 6px;
+    }
+
+    & [data-slot="toast"] {
+      transition:
+        opacity 0.22s 0.16s,
+        translate 0.55s var(--clay-spring);
+
+      &[data-starting-style] {
+        translate: 0 var(--clay-from, 28px);
+        opacity: 0;
+      }
+
+      &[data-ending-style] {
+        translate: 0 var(--clay-to, 28px);
+        opacity: 0;
+        transition:
+          opacity 0.2s,
+          translate 0.45s cubic-bezier(0.5, -0.3, 0.7, 0.9);
+      }
+    }
+
+    & [data-slot="toast-region"][data-clay-ready] [data-slot="toast"] {
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+
+  & [data-slot="toast-title"] {
+    font-weight: 850;
+  }
+
+  & [data-slot="toast-description"] {
+    color: inherit;
+    font-weight: 600;
+    opacity: 0.85;
+  }
+
+  & :is([data-slot="toast-action"], [data-slot="toast-close"]) {
+    height: 32px;
+    padding-inline: 14px;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in oklab, currentColor 8%, transparent);
+    box-shadow:
+      inset 2px 2px 4px color-mix(in oklab, var(--clay-shade) 16%, transparent),
+      inset -2px -2px 4px rgb(255 255 255 / 0.35);
+    color: inherit;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 2px;
+    }
+  }
+}
+
+/* Type */
+clay-input {
+  --h: 48px;
+  display: flex;
+  min-width: min(100%, 16rem);
+  align-items: center;
+  gap: 10px;
+  min-height: var(--h);
+  padding: 0 18px;
+  border-radius: 20px;
+  color: var(--clay-text-soft);
+
+  &[size="sm"] { --h: 40px; }
+  &[size="lg"] { --h: 56px; }
+
+  &:has(textarea) {
+    align-items: stretch;
+    padding-block: 14px;
+  }
+
+  & > svg,
+  & [data-slot="input-group"] > svg {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+  }
+
+  & [data-slot="input-group"] {
+    flex: 1;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    height: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    outline: none;
+  }
+
+  & :is([data-slot="input"], textarea) {
+    flex: 1;
+    min-width: 0;
+    height: calc(var(--h) - 4px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--clay-text);
+    font: inherit;
+    font-weight: 650;
+    outline: none;
+
+    &::placeholder {
+      color: var(--clay-text-soft);
+      opacity: 1;
+    }
+  }
+
+  & textarea {
+    height: auto;
+    min-height: 4.5rem;
+    resize: vertical;
+  }
+
+  & [data-slot="input-clear"] {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--clay-surface), var(--clay-shade) 12%);
+    color: var(--clay-text-soft);
+  }
+
+  /* With WebGL2 the rim itself glows on focus; the outline is for the CSS clay. */
+  &:not([data-clay-ready]):has(:focus-visible) {
+    outline: 3px solid var(--clay-ring);
+    outline-offset: 3px;
+  }
+
+  &:not([data-clay-ready])[data-invalid] {
+    outline-color: var(--clay-danger-text);
+  }
+
+  &:not([data-clay-ready]) {
+    background: color-mix(in oklab, var(--clay-surface), var(--clay-shade) 7%);
+    box-shadow:
+      inset 3px 3px 7px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 25%),
+      inset -3px -3px 6px color-mix(in oklab, var(--clay-surface), white 55%);
+  }
+
+  &:has(:disabled) {
+    opacity: 0.6;
+  }
+}
+
+clay-input[attached] {
+  position: relative;
+  margin-block: 24px 22px;
+
+  & > :is([data-slot="field-label"], [data-slot="field-description"]) {
+    position: absolute;
+    left: 16px;
+    margin: 0;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    opacity: var(--clay-out, 1);
+  }
+
+  & > [data-slot="field-label"] {
+    bottom: calc(100% - 3px);
+    color: var(--clay-text);
+    font-weight: 800;
+    translate: 0 calc((1 - var(--clay-out, 1)) * 18px - var(--clay-pull, 0) * 4px);
+  }
+
+  & > [data-slot="field-description"] {
+    top: calc(100% - 3px);
+    color: var(--clay-text-soft);
+    font-weight: 650;
+    translate: 0 calc(var(--clay-pull, 0) * 4px - (1 - var(--clay-out, 1)) * 18px);
+  }
+
+  &:not([data-clay-ready]) > :is([data-slot="field-label"], [data-slot="field-description"]) {
+    background: var(--clay-surface);
+    box-shadow:
+      0 4px 8px -4px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 50%),
+      inset 1px 1px 2px color-mix(in oklab, var(--clay-surface), white 55%);
+  }
+}
+
+/* Pick */
+clay-radio {
+  display: block;
+
+  & [data-slot="radio-group"] {
+    gap: 14px;
+  }
+
+  &[orientation="horizontal"] [data-slot="radio-group"] {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 14px 24px;
+  }
+
+  & label {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--clay-text);
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  & [data-slot="radio"] {
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 4px;
+    }
+  }
+
+  &[data-clay-ready] [data-slot="radio-indicator"] {
+    opacity: 0;
+  }
+
+  &:not([data-clay-ready]) {
+    & [data-slot="radio"] {
+      background: color-mix(in oklab, var(--clay-surface), var(--clay-shade) 8%);
+      box-shadow:
+        inset 2px 2px 4px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 30%),
+        0 0 0 3px var(--clay-surface);
+    }
+
+    & [data-slot="radio-indicator"] {
+      width: 14px;
+      height: 14px;
+      background: var(--clay-color);
+      box-shadow: inset 1px 1px 2px rgb(255 255 255 / 0.5);
+    }
+  }
+}
+
+/* A well slides between options in the clay; the items' own highlight steps aside for it. */
+:is(clay-select [data-slot="select-content"], clay-menu [data-slot="menu-content"])[data-clay-ready]
+  :is([data-slot="select-item"], [data-slot="menu-item"], [data-slot="menu-checkbox-item"], [data-slot="menu-radio-item"])[data-highlighted] {
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Fill and Gauge */
+:is(clay-progress, clay-meter) {
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+
+  & :is([data-slot="progress"], [data-slot="meter"]) {
+    gap: 12px 8px;
+    min-width: 0;
+  }
+
+  & :is([data-slot="progress-label"], [data-slot="meter-label"]) {
+    color: var(--clay-text);
+    font-weight: 800;
+  }
+
+  & :is([data-slot="progress-value"], [data-slot="meter-value"]) {
+    color: var(--clay-text-soft);
+    font-weight: 700;
+  }
+
+  & :is([data-slot="progress-track"], [data-slot="meter-track"]) {
+    height: 14px;
+    margin: 6px;
+    overflow: visible;
+    border-radius: 999px;
+  }
+
+  & :is([data-slot="progress-indicator"], [data-slot="meter-indicator"]) {
+    border-radius: 999px;
+    background: var(--clay-color);
+  }
+
+  &[data-clay-ready] {
+    & :is([data-slot="progress-track"], [data-slot="meter-track"]) {
+      background: transparent;
+    }
+
+    & :is([data-slot="progress-indicator"], [data-slot="meter-indicator"]) {
+      opacity: 0;
+    }
+  }
+
+  &:not([data-clay-ready]) :is([data-slot="progress-track"], [data-slot="meter-track"]) {
+    background: color-mix(in oklab, var(--clay-surface), var(--clay-shade) 10%);
+    box-shadow:
+      inset 2px 2px 4px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 30%),
+      0 0 0 6px var(--clay-surface);
+  }
+}
+
+clay-meter[orientation="vertical"] {
+  display: inline-block;
+  width: auto;
+  height: 100%;
+
+  & [data-slot="meter"] {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+    min-width: 0;
+  }
+
+  & [data-slot="meter-value"] { order: 1; }
+  & [data-slot="meter-track"] { order: 2; }
+  & [data-slot="meter-label"] { order: 3; }
+
+  & [data-slot="meter-track"] {
+    flex: 1;
+    width: 14px;
+    height: auto;
+    min-height: 3rem;
+  }
+
+  & [data-slot="meter-indicator"] {
+    inset: auto 0 0 !important;
+    width: 100% !important;
+    height: var(--clay-fill);
+  }
+
+  & [data-slot="meter-label"] {
+    font-weight: 700;
+  }
+}
+
+/* Frame */
+clay-avatar {
+  --size: 48px;
+  position: relative;
+  display: inline-grid;
+  width: var(--size);
+  height: var(--size);
+  padding: max(3px, calc(var(--size) * 0.07));
+  border-radius: 50%;
+  vertical-align: middle;
+
+  &[size="sm"] { --size: 36px; }
+  &[size="lg"] { --size: 64px; }
+  &[size="xl"] { --size: 96px; }
+
+  & [data-slot="avatar"] {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--clay-color), var(--clay-shade) 10%);
+    color: var(--clay-on-knob);
+    font-weight: 800;
+    font-size: calc(var(--size) * 0.34);
+  }
+
+  & [data-slot="avatar-image"] {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &[data-tone="dark"] [data-slot="avatar"] {
+    color: #fff;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: max(3px, calc(var(--size) * 0.07));
+    border-radius: 50%;
+    box-shadow:
+      inset 2px 3px 6px rgb(8 14 24 / 0.35),
+      inset -2px -2px 4px rgb(255 255 255 / 0.2);
+    pointer-events: none;
+  }
+}
+
+/* Drag */
+clay-slide-confirm {
+  --h: 58px;
+  display: block;
+  width: 100%;
+  max-width: 24rem;
+  border-radius: 999px;
+  font-weight: 800;
+
+  & [data-slot="slider"] {
+    min-width: 0;
+  }
+
+  & [data-slot="slider-control"] {
+    position: relative;
+    height: var(--h);
+    padding-inline: calc(var(--h) / 2);
+    cursor: grab;
+  }
+
+  & [data-slot="slider-track"] {
+    height: 4px;
+    background: transparent;
+  }
+
+  & [data-slot="slider-indicator"] {
+    background: transparent;
+  }
+
+  & [data-slot="slider-thumb"] {
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: calc(var(--h) - 12px);
+    height: calc(var(--h) - 12px);
+    border: 0;
+    background: var(--clay-knob);
+    box-shadow: 0 5px 12px -4px rgb(12 22 38 / 0.5);
+    color: var(--clay-on-knob);
+
+    &:has(:focus-visible) {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 3px;
+    }
+  }
+
+  &[data-clay-ready] [data-slot="slider-thumb"] {
+    background: transparent;
+    box-shadow: none;
+  }
+
+  &:not([data-clay-ready]) [data-slot="slider-control"] {
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--clay-color) calc(var(--clay-slide, 0) * 100%), transparent 0) no-repeat;
+  }
+
+  &[data-state="pending"],
+  &[data-state="success"] {
+    & [data-slot="slider-control"] {
+      cursor: default;
+    }
+  }
+}
+
+.clay-slide-label {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-inline: var(--h);
+  color: var(--clay-text-soft);
+  pointer-events: none;
+
+  & > span {
+    grid-area: 1 / 1;
+    opacity: 0;
+    translate: 0 0.5em;
+    transition:
+      opacity 0.25s,
+      translate 0.45s var(--clay-spring);
+  }
+}
+
+clay-slide-confirm[data-state="idle"] [data-label="idle"] {
+  opacity: calc(1 - var(--clay-slide, 0) * 1.8);
+  translate: calc(var(--clay-slide, 0) * 40px) 0;
+  transition: none;
+}
+
+clay-slide-confirm:is([data-state="pending"], [data-state="success"]) .clay-slide-label {
+  color: var(--clay-on-knob);
+}
+
+clay-slide-confirm[data-tone="dark"]:is([data-state="pending"], [data-state="success"]) .clay-slide-label {
+  color: #fff;
+}
+
+clay-slide-confirm[data-state="error"] .clay-slide-label {
+  color: var(--clay-danger-text);
+}
+
+clay-slide-confirm[data-state="pending"] [data-label="pending"],
+clay-slide-confirm[data-state="success"] [data-label="success"],
+clay-slide-confirm[data-state="error"] [data-label="error"] {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.clay-slide-icon {
+  display: grid;
+
+  & svg {
+    grid-area: 1 / 1;
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.6;
+    opacity: 0;
+    scale: 0.4;
+    transition:
+      opacity 0.2s,
+      scale 0.45s var(--clay-spring);
+  }
+}
+
+clay-slide-confirm:is([data-state="idle"], [data-state="error"]) [data-icon="idle"],
+clay-slide-confirm[data-state="pending"] [data-icon="pending"],
+clay-slide-confirm[data-state="success"] [data-icon="success"] {
+  opacity: 1;
+  scale: 1;
+}
+
+clay-slide-confirm[data-state="pending"] [data-icon="pending"] {
+  animation: clay-spin 0.8s linear infinite;
+}
+
+/*
+ * Attached popups: the clay grows out of the trigger, so the popup itself stays opaque (its canvas is
+ * inside it). Only its contents fade, and a hair of travel keeps ui-sdk from removing it until the clay
+ * has tucked back in.
+ */
+:is(clay-select, clay-menu, clay-popover, clay-tooltip)[attached]
+  :is([data-slot="select-content"], [data-slot="menu-content"], [data-slot="popover-content"], [data-slot="tooltip-content"]) {
+  scale: 1;
+  opacity: 1;
+  translate: 0 0;
+  transition: translate 0.5s linear;
+
+  &:is([data-starting-style], [data-ending-style], [data-closed]) {
+    scale: 1;
+    opacity: 1;
+    translate: 0 0.01px;
+  }
+
+  /* Not the way it came in: a transition that only reverses is cut short, and closing soon after
+     opening would hide the popup before its clay has tucked back in. */
+  &[data-ending-style] {
+    translate: 0 0.02px;
+  }
+
+  & > :not(.clay-canvas) {
+    transition:
+      opacity 0.22s 0.12s,
+      translate 0.45s 0.08s var(--clay-spring),
+      background 0.15s;
+  }
+
+  & > .clay-canvas {
+    opacity: 1;
+    translate: none;
+    transition: none;
+  }
+
+  &:is([data-starting-style], [data-ending-style], [data-closed]) > :not(.clay-canvas) {
+    translate: 0 4px;
+    opacity: 0;
+    transition:
+      opacity 0.12s,
+      translate 0.2s;
+  }
+}
+
+clay-tooltip[attached] [data-slot="tooltip-content"] {
+  color: var(--clay-text);
+}
+
+clay-tooltip[attached][data-tone="light"] [data-slot="tooltip-content"] {
+  color: var(--clay-on-knob);
+}
+
+clay-tooltip[attached][data-tone="dark"] [data-slot="tooltip-content"] {
+  color: #fff;
+}
+
+.clay-tip-text {
+  display: inline-block;
+}
+
+@keyframes clay-spin {
+  to { rotate: 360deg; }
+}
+
+@keyframes clay-stamp {
+  from {
+    scale: 0.4 0.7;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(clay-badge, .clay-action-label > span, .clay-bead svg, .clay-slide-label > span, .clay-slide-icon svg, [data-slot="select-content"], [data-slot="select-item"], [data-slot="tooltip-content"], [data-slot="menu-content"], [data-slot="menu-item"], [data-slot="popover-content"], [data-slot="popover-content"] > :not(.clay-canvas), [data-slot="dialog-content"], [data-slot="dialog-backdrop"], [data-slot="toast"], [data-slot="tabs-panel"]) {
+    animation: none;
+    transition: none;
+  }
+
+  :is(clay-action-button, clay-slide-confirm)[data-state="pending"] [data-icon="pending"] {
+    animation-duration: 2.4s;
+  }
+}
+
+@media (forced-colors: active) {
+  .clay-canvas {
+    display: none;
+  }
+
+  :is(clay-button, clay-action-button, clay-toggle, clay-button-group, clay-badge, clay-card, clay-avatar, clay-segmented, clay-switch, clay-checkbox, clay-input, clay-slide-confirm, clay-select [data-slot="select-trigger"], clay-tabs [data-slot="tabs-list"], [data-slot="menu-content"], [data-slot="popover-content"], [data-slot="dialog-content"], [data-slot="toast"]) {
+    border: 1px solid CanvasText;
+  }
+
+  :is(clay-toggle [aria-pressed="true"], clay-tabs [data-slot="tabs-tab"][data-selected]) {
+    outline: 2px solid Highlight;
+  }
+
+  clay-input:has(:focus-visible) {
+    outline: 3px solid Highlight;
+    outline-offset: 3px;
+  }
+}
