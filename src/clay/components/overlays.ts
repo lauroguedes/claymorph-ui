@@ -1,8 +1,9 @@
 import { Attachment, BACK, BLEND, faceOf, fuseOf, GLUE, GRIP, hug, OUT, PAST, poke, seed, smooth } from "../attach"
 import { SPRINGS } from "../config"
-import type { ClayShape } from "../engine"
+import type { ClayShape, Padding } from "../engine"
 import { ClayElement, NEUTRAL } from "../element"
 import { Flight } from "../flight"
+import { Follow } from "../follow"
 import { Highlight, withHighlight } from "../highlight"
 import { clamp, lerpBox, pressable, slab, type Box } from "../shared"
 import { Spring } from "../spring"
@@ -24,8 +25,11 @@ abstract class ClayPopupElement extends ClayElement {
   protected attachable = true
   /** Items a sliding highlight follows, for menus. */
   protected items = ""
+  /** Its slab follows its contents' size on a spring, as a palette's list narrows, instead of jumping. */
+  protected follows = false
   private attachment: Attachment | null = null
   private flight: Flight | null = null
+  private follow: Follow | null = null
   private highlight: Highlight | null = null
   private refit: () => void = () => {}
   private cleanup: Array<() => void> = []
@@ -49,6 +53,8 @@ abstract class ClayPopupElement extends ClayElement {
       this.highlight = new Highlight(content, this.items)
       this.cleanup.push(this.highlight.watch(() => this.surfaces[1]?.invalidate()))
     }
+    // Attached, a dialog's flight follows its contents itself.
+    if (content && this.follows && !this.hasAttribute("attached")) this.follow = new Follow(content)
     if (!content || !button || !this.hasAttribute("attached")) return
     if (!this.attachable) {
       this.flight = new Flight(
@@ -95,7 +101,44 @@ abstract class ClayPopupElement extends ClayElement {
     this.cleanup = []
     this.attachment = null
     this.flight = null
+    this.follow?.release()
+    this.follow = null
     this.highlight = null
+  }
+
+  /** A slab drawn to the popup's size on a spring, with room for it while it's bigger than the popup. */
+  private followed(at: number): SurfaceOptions {
+    const follow = this.follow!
+    const surface = () => this.surfaces[at]!
+    const room = 40
+    let reach: Padding = { left: room, top: room, right: room, bottom: room }
+    return {
+      swell: false,
+      pad: () => reach,
+      measure: () => {
+        follow.measure(true)
+        const { host } = surface()
+        const box = follow.box()
+        // It's anchored at its top-left corner, so only the right and bottom reach past the popup.
+        const past = (over: number) => room + Math.ceil(Math.max(0, over) / 16) * 16
+        reach = { left: room, top: room, right: past(box.w - host.offsetWidth), bottom: past(box.h - host.offsetHeight) }
+      },
+      step: (dt, still) => {
+        const moving = follow.step(dt, still)
+        if (moving) surface().stale = true
+        return moving
+      },
+      shapes: () => [
+        {
+          ...follow.box(),
+          radius: this.popupRadius,
+          color: surface().color("--clay-popup", NEUTRAL),
+          height: 0.85,
+          bevel: this.popupBevel,
+          lift: this.popupLift,
+        },
+      ],
+    }
   }
 
   protected surfaceFor(): Array<[HTMLElement, SurfaceOptions]> {
@@ -118,11 +161,12 @@ abstract class ClayPopupElement extends ClayElement {
     }
     if (content) {
       const at = index++
-      const base = (at === 1 && (this.attachment?.surfaceOptions() ?? this.flight?.surfaceOptions())) || {
-        swell: false,
-        pad: 40,
-        shapes: () => [slab(this.surfaces[at]!, "--clay-popup", this.popupRadius, this.popupBevel, this.popupLift)],
-      }
+      const base = (at === 1 && (this.attachment?.surfaceOptions() ?? this.flight?.surfaceOptions())) ||
+        (this.follow ? this.followed(at) : null) || {
+          swell: false,
+          pad: 40,
+          shapes: () => [slab(this.surfaces[at]!, "--clay-popup", this.popupRadius, this.popupBevel, this.popupLift)],
+        }
       surfaces.push([content, withHighlight(base, this.highlight, () => this.surfaces[at], this.attachment)])
     }
     return surfaces
@@ -154,6 +198,7 @@ class ClayPopover extends ClayPopupElement {
 class ClayDialog extends ClayPopupElement {
   protected readonly requires = "ui-dialog-content"
   protected attachable = false
+  protected follows = true
   protected readonly trigger = "ui-dialog-trigger"
   protected readonly content = "ui-dialog-content"
   protected popupRadius = 32

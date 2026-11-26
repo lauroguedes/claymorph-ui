@@ -1,6 +1,7 @@
 import { smooth } from "./attach"
 import { mix, type RGB } from "./color"
-import type { ClayShape } from "./engine"
+import type { ClayShape, Padding } from "./engine"
+import { Follow } from "./follow"
 import { clamp, lerp, watch, type Box } from "./shared"
 import { Spring, type SpringConfig } from "./spring"
 import { offsetWithin, type ClaySurface, type SurfaceOptions } from "./surface"
@@ -75,10 +76,11 @@ interface Drop {
   d: number
 }
 
-/** Where a line from a box's middle along (ux, uy) leaves it, a little inside its edge. */
+/** Where a line from a box's middle along (ux, uy) leaves it, a little inside its edge; its middle without one. */
 function exit(t: Box, ux: number, uy: number) {
   const hx = t.w / 2
   const hy = t.h / 2
+  if (!ux && !uy) return { x: t.x + hx, y: t.y + hy }
   const reach = Math.min(ux ? hx / Math.abs(ux) : Infinity, uy ? hy / Math.abs(uy) : Infinity)
   const inside = Math.min(hx, hy) * 0.35
   return { x: t.x + hx + ux * (reach - inside), y: t.y + hy + uy * (reach - inside) }
@@ -105,7 +107,8 @@ class Flight {
   private landed = true
   private trigger: Box | null = null
   private size = { w: 0, h: 0 }
-  private reach = PAD
+  /** Room for the canvas on each side: only toward the button reaches far, and only while it flies. */
+  private reach: Padding = { left: PAD, top: PAD, right: PAD, bottom: PAD }
   private lastGrow = ""
   private joined = false
   /** How far the contents have faded in: opening, never back, though the clay wobbles under them. */
@@ -113,11 +116,14 @@ class Flight {
   private readonly content: HTMLElement
   private readonly options: FlightOptions
   private readonly surface: () => ClaySurface | undefined
+  /** Once it has landed, the popup's box on springs, so it swells and shrinks as its contents change. */
+  private readonly follow: Follow
 
   constructor(content: HTMLElement, options: FlightOptions, surface: () => ClaySurface | undefined) {
     this.content = content
     this.options = options
     this.surface = surface
+    this.follow = new Follow(content)
   }
 
   /** Whether any of the popup's clay is out of the button. */
@@ -147,6 +153,7 @@ class Flight {
     sync()
     return () => {
       stop()
+      this.follow.release()
       content.style.removeProperty("--clay-grow")
       if (this.joined) this.options.onJoin?.(false)
       this.joined = false
@@ -184,9 +191,12 @@ class Flight {
       this.pull.step(dt, this.open ? PULL : PULL_BACK, still),
       this.fly.step(dt, this.open ? FLY : BACK, still),
       this.grow.step(dt, this.open ? GROW : BACK, still),
+      this.follow.step(dt, still),
     ].some(Boolean)
     if (!this.open && !this.landed && this.pull.x <= 0.02 && this.fly.x <= 0.02 && this.grow.x <= 0.05) {
       this.landed = true
+      // Its contents were last cut as it closed; uncut, they open whole next time.
+      this.follow.release()
       this.options.onLand?.()
     }
     const joined = !this.landed && !!this.trigger && this.fly.x < JOINED
@@ -215,14 +225,24 @@ class Flight {
     // Closed and hidden: keep the last boxes so the bead can fly home.
     if (content.getBoundingClientRect().width === 0) return
     this.size = { w: content.offsetWidth, h: content.offsetHeight }
+    // A button off screen, as when ⌘K opens a palette, is no place to fly from: it swells in place.
     const trigger = this.options.trigger()
-    this.trigger = trigger?.getClientRects().length ? offsetWithin(trigger, content) : null
+    const t = trigger?.getBoundingClientRect()
+    const shown = !!t && t.width > 0 && t.bottom > 0 && t.right > 0 && t.top < innerHeight && t.left < innerWidth
+    this.trigger = shown ? offsetWithin(trigger!, content) : null
     const { w, h } = this.size
     const settled = this.pull.x >= 0.999 && this.fly.x >= 0.999 && this.grow.x >= 0.999
-    const boxes = [this.place()?.box, settled ? null : this.trigger].filter((box): box is Box => !!box)
-    const reach = Math.max(0, ...boxes.map((b) => Math.max(-b.x, -b.y, b.x + b.w - w, b.y + b.h - h))) + PAD
+    // Landed, it follows its contents on a spring, as a palette's list narrows; on its way, at once.
+    this.follow.measure(this.open && settled)
+    const boxes = [this.place()?.box, this.follow.box(), settled ? null : this.trigger].filter((box): box is Box => !!box)
     // In steps, so the canvas isn't resized on every frame of the flight.
-    this.reach = Math.ceil(reach / 32) * 32
+    const side = (over: (b: Box) => number) => Math.ceil((Math.max(0, ...boxes.map(over)) + PAD) / 32) * 32
+    this.reach = {
+      left: side((b) => -b.x),
+      top: side((b) => -b.y),
+      right: side((b) => b.x + b.w - w),
+      bottom: side((b) => b.y + b.h - h),
+    }
   }
 
   /**
@@ -230,11 +250,13 @@ class Flight {
    * behind it, and how far it has swollen.
    */
   private place() {
-    const { w: W, h: H } = this.size
+    // Where it lands: its own box, which swells and shrinks on a spring once it's there.
+    const full = this.follow.box()
+    const { w: W, h: H } = full
     if (!W || !H) return null
+    const to = { x: full.x + W / 2, y: full.y + H / 2 }
     // Without a button on screen, it swells out of a bead in its own middle.
-    const t = this.trigger ?? { x: W / 2 - 22, y: H / 2 - 22, w: 44, h: 44 }
-    const to = { x: W / 2, y: H / 2 }
+    const t = this.trigger ?? { x: to.x - 22, y: to.y - 22, w: 44, h: 44 }
     const dx = to.x - (t.x + t.w / 2)
     const dy = to.y - (t.y + t.h / 2)
     const length = Math.hypot(dx, dy) || 1

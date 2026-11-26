@@ -62,6 +62,10 @@
       "types": "./dist/entries/combobox.d.ts",
       "default": "./dist/entries/combobox.js"
     },
+    "./command": {
+      "types": "./dist/entries/command.d.ts",
+      "default": "./dist/entries/command.js"
+    },
     "./dialog": {
       "types": "./dist/entries/dialog.d.ts",
       "default": "./dist/entries/dialog.js"

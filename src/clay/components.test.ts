@@ -560,9 +560,12 @@ test("an attached dialog is pulled out of its button on a neck, flies with a tai
     () => surface as never
   )
   type Shape = { x: number; y: number; w: number; h: number; color: number[]; melt?: number; ghost?: boolean }
-  const inner = flight as unknown as { size: object; trigger: object; shapes(): Shape[] }
+  const inner = flight as unknown as { size: object; trigger: object; follow: { measure(spring: boolean): void }; shapes(): Shape[] }
   // The dialog is 400 by 240; its button sits 300px to the left of it and 500px below.
+  content.getBoundingClientRect = () => ({ left: 0, top: 0, right: 400, bottom: 240, width: 400, height: 240, x: 0, y: 0 }) as DOMRect
+  Object.defineProperties(content, { offsetWidth: { value: 400 }, offsetHeight: { value: 240 } })
   Object.assign(inner, { size: { w: 400, h: 240 }, trigger: { x: -300, y: 500, w: 120, h: 44 } })
+  inner.follow.measure(false)
   content.setAttribute("data-open", "")
   const stop = flight.connect()
   const { step } = flight.surfaceOptions()
@@ -632,4 +635,90 @@ test("an attached dialog is pulled out of its button on a neck, flies with a tai
   expect(flight.joint(button), "on either side").toEqual([])
   expect(grown()).toBe(0)
   stop()
+})
+
+test("an attached dialog whose button is off screen swells out of its own middle", async () => {
+  const { Flight } = await import("./flight")
+  const content = document.createElement("div")
+  document.body.append(content)
+  content.getClientRects = () => [{}] as unknown as DOMRectList
+  content.getBoundingClientRect = () => ({ left: 0, top: 0, right: 400, bottom: 240, width: 400, height: 240, x: 0, y: 0 }) as DOMRect
+  Object.defineProperties(content, { offsetWidth: { value: 400 }, offsetHeight: { value: 240 } })
+  const surface = { stale: false, key: "", visible: true, canvas: { width: 0, height: 0 }, ctx: { clearRect() {} }, wake() {}, invalidate() {} }
+  const flight = new Flight(
+    content,
+    {
+      // jsdom lays nothing out, so the button has no box on screen, as when it's scrolled away.
+      trigger: () => document.createElement("button"),
+      triggerShape: (box) => ({ radius: box.h / 2, height: 1 }),
+      triggerColor: () => [0.3, 0.6, 0.6],
+      color: () => [0.9, 0.9, 0.9],
+      radius: 32,
+      bevel: 26,
+      lift: 2.4,
+    },
+    () => surface as never
+  )
+  content.setAttribute("data-open", "")
+  const stop = flight.connect()
+  const { step, measure, pad } = flight.surfaceOptions()
+  const seen: Array<{ x: number; y: number; w: number; h: number }> = []
+  for (let frame = 0; frame < 90; frame++) {
+    measure!()
+    step!(1 / 60, false)
+    seen.push(...(flight as unknown as { shapes(): Array<{ x: number; y: number; w: number; h: number }> }).shapes())
+  }
+  expect(seen.length, "it's drawn").toBeGreaterThan(0)
+  expect(seen.every((s) => [s.x, s.y, s.w, s.h].every(Number.isFinite)), "everywhere on the page").toBe(true)
+  const first = seen[0]!
+  expect(first.x + first.w / 2, "from its own middle").toBeCloseTo(200, 0)
+  const room = (pad as () => { left: number; top: number; right: number; bottom: number })()
+  expect(Object.values(room).every(Number.isFinite), "with room for its shadow, and no more").toBe(true)
+  stop()
+})
+
+test("a slab that follows its popup swells to a new size on a spring, and takes its size at once when shown again", async () => {
+  const { Follow } = await import("./follow")
+  const host = document.createElement("div")
+  const child = document.createElement("div")
+  host.append(child)
+  document.body.append(host)
+  let size = { w: 400, h: 300 }
+  Object.defineProperties(host, { offsetWidth: { get: () => size.w }, offsetHeight: { get: () => size.h } })
+  const follow = new Follow(host)
+  follow.measure(true)
+  expect(follow.box(), "the first time, at once").toEqual({ x: 0, y: 0, w: 400, h: 300 })
+
+  size = { w: 400, h: 120 }
+  follow.measure(true)
+  follow.step(1 / 60, false)
+  const h = follow.box().h
+  expect(h, "then on a spring, from its top").toBeGreaterThan(200)
+  expect(follow.box().y).toBe(0)
+  for (let frame = 0; frame < 120; frame++) follow.step(1 / 60, false)
+  expect(follow.box().h).toBeCloseTo(120, 0)
+
+  // Closed, its contents grow back while no one sees them; opened, it doesn't swell from the old size.
+  size = { w: 0, h: 0 }
+  follow.measure(true)
+  size = { w: 400, h: 300 }
+  follow.measure(true)
+  expect(follow.box().h, "shown again, at once").toBe(300)
+  follow.release()
+})
+
+test("a plain dialog follows its contents too, and an attached one leaves that to its flight", async () => {
+  const dialog = (attached: boolean) => `
+    <clay-dialog ${attached ? "attached" : ""}>
+      <ui-dialog>
+        <ui-dialog-trigger><button>Open</button></ui-dialog-trigger>
+        <ui-dialog-content hidden><ui-dialog-title>Title</ui-dialog-title></ui-dialog-content>
+      </ui-dialog>
+    </clay-dialog>`
+  document.body.innerHTML = dialog(false) + dialog(true)
+  await settle()
+  const [plain, attached] = [...document.querySelectorAll("clay-dialog")] as unknown as Array<{ follow: unknown; flight: unknown }>
+  expect(plain!.follow).toBeTruthy()
+  expect(attached!.follow).toBeNull()
+  expect(attached!.flight).toBeTruthy()
 })

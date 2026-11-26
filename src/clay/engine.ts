@@ -46,10 +46,18 @@ interface ClayFrame {
   light: [number, number, number]
 }
 
+/** Room around a view's host for its clay to reach past it, in CSS px, on each side. */
+interface Padding {
+  left: number
+  top: number
+  right: number
+  bottom: number
+}
+
 interface ClayView {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
-  pad: number
+  padding: Padding
   width: number
   height: number
   visible: boolean
@@ -72,7 +80,7 @@ precision highp float;
 #define MAX ${MAX_SHAPES}
 uniform vec2 uSize;
 uniform float uDpr;
-uniform float uPad;
+uniform vec2 uPad;
 uniform int uCount;
 uniform vec4 uRect[MAX];
 uniform float uRadius[MAX];
@@ -301,10 +309,17 @@ class ClayEngine {
   private blend = new Float32Array(MAX_SHAPES)
   private opacity = new Float32Array(MAX_SHAPES)
   private flat = new Float32Array(MAX_SHAPES)
+  /**
+   * The most device pixels a view is drawn at, across: past what the GPU can draw, the shared canvas
+   * would come out blank for every view after it.
+   */
+  private readonly limit: number
 
   constructor(canvas: HTMLCanvasElement, gl: WebGL2RenderingContext) {
     this.canvas = canvas
     this.gl = gl
+    const dims = gl.getParameter(gl.MAX_VIEWPORT_DIMS) as Int32Array | null
+    this.limit = Math.min(4096, dims?.[0] ?? 4096, dims?.[1] ?? 4096, (gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) as number) || 4096)
     canvas.addEventListener("webglcontextlost", (event) => {
       event.preventDefault()
       this.program = null
@@ -381,14 +396,17 @@ class ClayEngine {
   private draw(view: ClayView) {
     if (!this.program || view.width <= 0 || view.height <= 0) return
     const frame = view.frame()
-    const dpr = Math.min(devicePixelRatio || 1, 2)
-    const cssW = view.width + view.pad * 2
-    const cssH = view.height + view.pad * 2
+    const { padding } = view
+    const cssW = view.width + padding.left + padding.right
+    const cssH = view.height + padding.top + padding.bottom
+    // A view too big for the GPU, like a popup's canvas reaching back to a far button as it flies, is
+    // drawn at a lower resolution for as long as it's that big.
+    const dpr = Math.min(devicePixelRatio || 1, 2, this.limit / cssW, this.limit / cssH)
     const devW = Math.max(1, Math.round(cssW * dpr))
     const devH = Math.max(1, Math.round(cssH * dpr))
     const shapes = frame.shapes.slice(0, MAX_SHAPES)
     const key = [
-      devW, devH, frame.glow.toFixed(3), frame.light.map((v) => v.toFixed(3)).join(),
+      devW, devH, padding.left, padding.top, frame.glow.toFixed(3), frame.light.map((v) => v.toFixed(3)).join(),
       frame.pointer ? `${frame.pointer.x.toFixed(1)},${frame.pointer.y.toFixed(1)},${frame.pointer.strength.toFixed(2)}` : "-",
       ...shapes.map((s) =>
         [s.x, s.y, s.w, s.h, s.radius, s.height, s.melt ?? 0, s.lift ?? 0, s.bevel ?? 0, s.glow ?? 0, ghostOf(s), s.blend ?? 0, s.opacity ?? 1, s.flatten ?? 0, ...s.color]
@@ -436,7 +454,7 @@ class ClayEngine {
     gl.clear(gl.COLOR_BUFFER_BIT)
     gl.uniform2f(loc.uSize, devW, devH)
     gl.uniform1f(loc.uDpr, dpr)
-    gl.uniform1f(loc.uPad, view.pad)
+    gl.uniform2f(loc.uPad, padding.left, padding.top)
     gl.uniform1i(loc.uCount, shapes.length)
     gl.uniform4fv(loc.uRect, this.rect)
     gl.uniform1fv(loc.uRadius, this.radius)
@@ -491,4 +509,4 @@ function getClayEngine() {
   return engine
 }
 
-export { getClayEngine, type ClayFrame, type ClayShape, type ClayView }
+export { getClayEngine, type ClayFrame, type ClayShape, type ClayView, type Padding }

@@ -1,6 +1,6 @@
 ---
 name: clay-ui
-description: Builds interfaces with Claymorph UI, soft clay web components drawn by one WebGL2 shader on top of ui-sdk. Use when a project depends on claymorph-ui, has src/clay/, or mentions Claymorph UI, claymorphism components, or any of its verbs - Press (button), Roll (async action button), Latch (toggle), Fuse (button group), Drag (slide to confirm), Type (input), Slide (segmented control), Flip (switch), Tick (checkbox), Pick (radio group), Stretch (slider), Pour (select), Sift (combobox), Shift (tabs), Spill (menu), Unfold (popover), Lift (dialog), Pop (tooltip), Drop (toast), Hold (card), Stamp (badge), Frame (avatar), Fill (progress), Gauge (meter).
+description: Builds interfaces with Claymorph UI, soft clay web components drawn by one WebGL2 shader on top of ui-sdk. Use when a project depends on claymorph-ui, has src/clay/, or mentions Claymorph UI, claymorphism components, or any of its verbs - Press (button), Roll (async action button), Latch (toggle), Fuse (button group), Drag (slide to confirm), Type (input), Slide (segmented control), Flip (switch), Tick (checkbox), Pick (radio group), Stretch (slider), Pour (select), Sift (combobox), Shift (tabs), Spill (menu), Unfold (popover), Lift (dialog), Summon (command palette), Pop (tooltip), Drop (toast), Hold (card), Stamp (badge), Frame (avatar), Fill (progress), Gauge (meter).
 ---
 
 # Claymorph UI
@@ -36,6 +36,7 @@ Clay elements give ui-sdk's web components a clay body. The ui-sdk part inside k
 | Spill | Several actions on one thing | `<clay-menu>` | `ui-menu` |
 | Unfold | A short task by its button | `<clay-popover>` | `ui-popover` |
 | Lift | A decision that needs attention | `<clay-dialog>` | `ui-dialog` |
+| Summon | Any action by name, behind ⌘K | `<clay-command>`, in a `<clay-dialog>` for a palette | `ui-command`; put the input and its icon in one `<div>` |
 | Pop | A hint or a name for an icon button | `<clay-tooltip>` | `ui-tooltip` |
 | Drop | News that an action finished | `<clay-toast-region>` + `toast()` | `ui-toast-region` |
 | Hold | Grouped content | `<clay-card>` | nothing |
@@ -90,6 +91,7 @@ toast.success("Invite sent")
 - **Roll** keeps its idle label as its accessible name in every state and announces success or error. Return a promise from `action`; a rejection shows the error state.
 - **Pour**: the list grows from the trigger. Don't put a `clay-card` inside it.
 - **Sift**: wrap `ui-combobox-input` and its trigger or clear buttons in one `<div>`: that's the field the clay is carved into, and the list lines up with it. A trigger `<button>` with no icon gets a chevron.
+- **Summon** as a ⌘K palette: put `<clay-command>` straight inside `<ui-dialog-content>` of a `<clay-dialog>` (add `attached` to fly it out of its button), put `shortcut="mod+k"` on the dialog's trigger, keep a `ui-dialog-title` (it's hidden from view), and close the dialog on the command's `action` event. The dialog is its slab and sits near the top.
 - **Pop** around an icon button: put the `<clay-button>` inside `<ui-tooltip>` and the `<ui-tooltip-trigger><button aria-label=…>` inside the `<clay-button>`.
 - **Hold** is a container, not a control. Put real controls inside it for actions; `interactive` only adds the swell.
 - **Attached** (`attached` on `<clay-input>`, `<clay-select>`, `<clay-combobox>`, `<clay-menu>`, `<clay-popover>`, `<clay-dialog>`, `<clay-tooltip>` and `<clay-toast-region>`): parts squeeze out of their body like Roll's bead, stay melted onto it, and tuck back in when they leave. Type draws the `ui-field-label` and `ui-field-description` placed inside it as beads on its rim; Pour, Spill, Unfold and Pop grow their popup out of the trigger, and Sift its list out of the field, swelling and shrinking with the matches; Lift is pulled out of its button as a bead on a neck, flies with a dripping tail and swells into the dialog, and back; Drop's toasts each pull out of the one before.

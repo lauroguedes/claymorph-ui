@@ -726,6 +726,79 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
     ],
   },
   {
+    slug: "command",
+    group: "components",
+    section: "Views and popups",
+    title: "Command",
+    tag: "clay-command",
+    verb: "Summon",
+    signature: "A palette of commands at a keystroke.",
+    description:
+      "The search and list of a command palette: the search is carved like Type's field, a well slides between the commands, and the slab swells and shrinks as typing narrows the list. Wraps `ui-command`; in a dialog, it's a ⌘K palette.",
+    hero: "command-basic",
+    blocks: [
+      {
+        type: "when",
+        use: ["Running any action or going anywhere from the keyboard, by name: a palette behind ⌘K."],
+        avoid: ["Choosing a value for a form: use **Sift**.", "A few actions on one thing: use **Spill**."],
+      },
+      { type: "install" },
+      { type: "h", text: "Usage" },
+      {
+        type: "p",
+        text: "Put the search input and its icon in one box: that box is the field the clay is carved into. On its own, the command is a clay slab; type and it swells and shrinks with the list on a spring.",
+      },
+      {
+        type: "code",
+        title: "index.html",
+        code: `<clay-command>
+  <ui-command>
+    <div>
+      <svg aria-hidden="true">…</svg>
+      <ui-command-input><input aria-label="Search commands" placeholder="Type a command or search…" /></ui-command-input>
+    </div>
+    <ui-command-empty>No commands found.</ui-command-empty>
+    <ui-command-list>
+      <ui-command-group>
+        <ui-command-group-label>Playback</ui-command-group-label>
+        <ui-command-item value="play">Play or pause</ui-command-item>
+        <ui-command-item value="shuffle">Shuffle the queue</ui-command-item>
+      </ui-command-group>
+    </ui-command-list>
+  </ui-command>
+</clay-command>`,
+      },
+      { type: "h", text: "Palette" },
+      {
+        type: "p",
+        text: "For a palette, put the command in a `<clay-dialog>`, give its trigger a `shortcut`, like `mod+k`, and close the dialog on the command's `action` event. The dialog is the slab: it drops onto the page near the top, so the search stays put, and it swells and shrinks with the list as you type. Press the button or ⌘J / Ctrl+J, then type.",
+      },
+      { type: "demo", id: "command-palette", title: "Palette" },
+      { type: "h", text: "Attached" },
+      {
+        type: "p",
+        text: "With `attached` on the `<clay-dialog>`, the palette is pulled out of its button's own clay, flies up and swells into place, and flies back into the button when it closes, as Lift does. Opened with the shortcut while its button is out of sight, it swells in place instead. Press the button or ⌘K / Ctrl+K.",
+      },
+      { type: "demo", id: "command-attached", title: "Attached" },
+      { type: "h", text: "API reference" },
+      {
+        type: "api",
+        title: "Attributes",
+        rows: [{ ...COMMON_API[0]!, default: "teal", description: "The search field's glow while focused. The slab uses `--clay-popup`." }],
+      },
+      { type: "h", text: "Accessibility" },
+      {
+        type: "list",
+        items: [
+          "A ui-sdk command: a combobox whose list is always shown. Focus stays in the search while the arrow keys move the highlight, Enter runs the command, and Escape clears the search.",
+          "Name the search input with `aria-label`, and give a palette's dialog a `ui-dialog-title`: it names the dialog, and is hidden from view since the search speaks for itself.",
+          "An item's `shortcut` runs it while the list is mounted, and `ui-command-shortcut` shows its keys for the current platform.",
+          "The slab's swelling follows the reduced-motion setting.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "card",
     group: "components",
     section: "Display",
@@ -1655,10 +1728,12 @@ const RELEASES: Release[] = [
   {
     version: "0.5.0",
     date: "2026-11-25",
-    title: "Sifted and flown",
+    title: "Sifted, flown and summoned",
     changes: [
       { kind: "new", page: "combobox", text: "**Sift**, `<clay-combobox>`: a combobox whose field is carved like Type's and whose list narrows as you type, with a well sliding between the matches. Wraps `ui-combobox`, from `claymorph-ui/combobox`." },
       { kind: "new", page: "combobox", text: "`attached` and `fuse` on Sift: the list squeezes out of the field's rim and stays melted onto it, swelling and shrinking on a spring as matches come and go." },
+      { kind: "new", page: "command", text: "**Summon**, `<clay-command>`: a command palette's search, carved like Type's field, and its list, with a well sliding between the commands. On its own it's a slab that swells and shrinks as typing narrows the list; in a `<clay-dialog>` it's a ⌘K palette, and with `attached` the palette flies out of its button. Wraps `ui-command`, from `claymorph-ui/command`." },
+      { kind: "improved", page: "dialog", text: "A dialog whose contents change size, like a palette's list as you type, swells and shrinks on a spring instead of jumping, attached or not." },
       { kind: "new", page: "dialog", text: "`attached` on Lift, moving like the logo: a bead is pulled out of the button's own clay on a stretching neck, flies off dripping a tail that runs back in as it slows, and swells into the dialog with a wobble. Closing runs it all back into the button, which bounces as it takes it in." },
     ],
   },

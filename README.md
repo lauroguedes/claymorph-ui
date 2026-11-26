@@ -97,6 +97,7 @@ Every element is named for the one thing it does.
 | Spill | Menu | `<clay-menu>` | `claymorph-ui/menu` |
 | Unfold | Popover | `<clay-popover>` | `claymorph-ui/popover` |
 | Lift | Dialog | `<clay-dialog>` | `claymorph-ui/dialog` |
+| Summon | Command palette | `<clay-command>` | `claymorph-ui/command` |
 | Pop | Tooltip | `<clay-tooltip>` | `claymorph-ui/tooltip` |
 | Drop | Toast | `<clay-toast-region>` | `claymorph-ui/toast` |
 | Hold | Card | `<clay-card>` | `claymorph-ui/card` |

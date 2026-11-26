@@ -7,6 +7,7 @@ Claymorph UI gives ui-sdk's web components a clay body. You keep writing the ui-
 Every component is named for **one verb**, so picking one takes a second:
 
 - **Sift**: [Combobox](/docs/combobox.md), `<clay-combobox>`. The list narrows as you type.
+- **Summon**: [Command](/docs/command.md), `<clay-command>`. A palette of commands at a keystroke.
 - **Press**: [Button](/docs/button.md), `<clay-button>`. Swells under the pointer, squashes when pressed.
 - **Roll**: [Action Button](/docs/action-button.md), `<clay-action-button>`. Its bead melts in while the action runs.
 - **Latch**: [Toggle](/docs/toggle.md), `<clay-toggle>`. It stays pressed in.

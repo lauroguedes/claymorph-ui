@@ -1,6 +1,7 @@
 import type { RGB } from "./color"
 import { SPRINGS } from "./config"
 import type { ClayShape } from "./engine"
+import { Clip } from "./follow"
 import { clamp, lerp, lerpBox, watch, type Box } from "./shared"
 import { Spring } from "./spring"
 import { offsetWithin, type ClaySurface, type SurfaceOptions } from "./surface"
@@ -111,7 +112,7 @@ class Attachment {
   private tucked = true
   /** With `resize`, the popup's box relative to the trigger's corner, on springs. */
   private readonly frame = { x: new Spring(0), y: new Spring(0), w: new Spring(0), h: new Spring(0) }
-  private clipped = new Map<HTMLElement, string>()
+  private readonly cut: Clip
   private readonly content: HTMLElement
   private readonly options: AttachOptions
   private readonly surface: () => ClaySurface | undefined
@@ -120,6 +121,7 @@ class Attachment {
     this.content = content
     this.options = options
     this.surface = surface
+    this.cut = new Clip(content)
   }
 
   /** Whether the popup's clay is out of the trigger at all. */
@@ -238,25 +240,11 @@ class Attachment {
 
   /** Cuts the popup's contents to its clay while the clay is still catching up with them. */
   private clip() {
-    if (!this.trigger || !this.size.w || !this.content.getClientRects().length) return
-    const d = this.full()
-    // A little inside the clay's edge, where its bevel starts.
-    const edge = 6
-    for (const child of this.content.children) {
-      if (!(child instanceof HTMLElement) || child.classList.contains("clay-canvas") || !child.getClientRects().length) continue
-      const c = offsetWithin(child, this.content)
-      const inset = [d.y + edge - c.y, c.x + c.w - (d.x + d.w - edge), c.y + c.h - (d.y + d.h - edge), d.x + edge - c.x]
-      const value = inset.some((v) => v > 0.5) ? `inset(${inset.map((v) => `${Math.max(v, 0).toFixed(1)}px`).join(" ")} round 12px)` : ""
-      if ((this.clipped.get(child) ?? "") === value) continue
-      child.style.clipPath = value
-      if (value) this.clipped.set(child, value)
-      else this.clipped.delete(child)
-    }
+    if (this.trigger && this.size.w) this.cut.to(this.full())
   }
 
   private unclip() {
-    for (const child of this.clipped.keys()) child.style.removeProperty("clip-path")
-    this.clipped.clear()
+    this.cut.clear()
   }
 
   /** Where the popup's clay is right now, straight from the spring, and how far it pokes out of the trigger. */
