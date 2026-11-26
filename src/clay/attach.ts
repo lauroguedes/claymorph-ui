@@ -1,5 +1,7 @@
 import type { RGB } from "./color"
+import { SPRINGS } from "./config"
 import type { ClayShape } from "./engine"
+import { Clip } from "./follow"
 import { clamp, lerp, lerpBox, watch, type Box } from "./shared"
 import { Spring } from "./spring"
 import { offsetWithin, type ClaySurface, type SurfaceOptions } from "./surface"
@@ -16,6 +18,11 @@ interface AttachOptions {
   lift: number
   /** How far the popup melts into the trigger, from 0, a slight waist, to 1, one body. Asked every frame. */
   fuse?: () => number
+  /**
+   * The popup changes size while it's open, as a list does when typing filters it: its clay follows
+   * on a spring, and its contents are cut to the clay until it catches up.
+   */
+  resize?: boolean
   /** Holds the trigger's clay still while the popup is melted onto it. */
   calm?: (on: boolean) => void
   /** The popup has tucked back into the trigger. */
@@ -103,6 +110,9 @@ class Attachment {
   private size = { w: 0, h: 0 }
   private reach = 40
   private tucked = true
+  /** With `resize`, the popup's box relative to the trigger's corner, on springs. */
+  private readonly frame = { x: new Spring(0), y: new Spring(0), w: new Spring(0), h: new Spring(0) }
+  private readonly cut: Clip
   private readonly content: HTMLElement
   private readonly options: AttachOptions
   private readonly surface: () => ClaySurface | undefined
@@ -111,6 +121,7 @@ class Attachment {
     this.content = content
     this.options = options
     this.surface = surface
+    this.cut = new Clip(content)
   }
 
   /** Whether the popup's clay is out of the trigger at all. */
@@ -146,6 +157,7 @@ class Attachment {
       stop()
       removeEventListener("scroll", scroll, { capture: true })
       this.options.calm?.(false)
+      this.unclip()
     }
   }
 
@@ -160,9 +172,15 @@ class Attachment {
         const back = this.emerge.target <= 0
         // Hidden before it tucked back in: the trigger mustn't go on drawing its side of the joint alone.
         if (back && !this.tucked && !this.content.getClientRects().length) this.emerge.set(PAST)
-        const moving = this.emerge.step(dt, back ? BACK : OUT, still)
+        let moving = this.emerge.step(dt, back ? BACK : OUT, still)
+        if (this.options.resize) {
+          const frame = Object.values(this.frame).map((spring) => spring.step(dt, SPRINGS.morph, still))
+          moving = frame.some(Boolean) || moving
+          this.clip()
+        }
         if (back && !this.tucked && (this.place()?.poke ?? 0) <= TUCKED) {
           this.tucked = true
+          this.unclip()
           this.options.calm?.(false)
           this.options.onTuck?.()
         }
@@ -186,10 +204,47 @@ class Attachment {
     const w = content.offsetWidth
     const h = content.offsetHeight
     this.size = { w, h }
-    this.reach = Math.ceil(Math.max(32, -t.x, -t.y, t.x + t.w - w, t.y + t.h - h) + 32)
+    if (this.options.resize) this.follow(t, w, h)
+    const d = this.full()
+    const reach = Math.max(32, -t.x, -t.y, t.x + t.w - w, t.y + t.h - h, -d.x, -d.y, d.x + d.w - w, d.y + d.h - h) + 32
+    // In steps, so a popup changing size doesn't resize its canvas on every frame.
+    this.reach = Math.ceil(reach / 16) * 16
     // The trigger draws its side of the joint before this runs; give it another frame to catch up.
     const moved = !last || [t.x - last.x, t.y - last.y, t.w - last.w, t.h - last.h].some((d) => Math.abs(d) > 0.02)
     if (moved) this.surface()?.wake()
+  }
+
+  /**
+   * Springs the popup's box toward its new size. Relative to the trigger, so the edge it's attached by
+   * stays put whichever side it opened on, as ui-sdk moves the popup to keep that edge in place.
+   */
+  private follow(t: Box, w: number, h: number) {
+    // Closing, it tucks back in at the size it had, whatever its contents do meanwhile.
+    if (this.emerge.target <= 0) return
+    const target = { x: -t.x, y: -t.y, w, h }
+    // Coming out, it takes its size at once: only a popup that's all the way out swells and shrinks.
+    const out = this.emerge.x > 0.9
+    for (const key of ["x", "y", "w", "h"] as const) {
+      if (out) this.frame[key].target = target[key]
+      else this.frame[key].set(target[key])
+    }
+  }
+
+  /** The popup's whole box, in its own coordinates: on springs with `resize`, else its own box. */
+  private full(): Box {
+    const t = this.trigger
+    if (!this.options.resize || !t) return { x: 0, y: 0, w: this.size.w, h: this.size.h }
+    const { x, y, w, h } = this.frame
+    return { x: t.x + x.x, y: t.y + y.x, w: w.x, h: h.x }
+  }
+
+  /** Cuts the popup's contents to its clay while the clay is still catching up with them. */
+  private clip() {
+    if (this.trigger && this.size.w) this.cut.to(this.full())
+  }
+
+  private unclip() {
+    this.cut.clear()
   }
 
   /** Where the popup's clay is right now, straight from the spring, and how far it pokes out of the trigger. */
@@ -197,7 +252,7 @@ class Attachment {
     const t = this.trigger
     if (!t || !this.size.w) return null
     const e = clamp(this.emerge.x, 0, 1.15)
-    const full = { x: 0, y: 0, w: this.size.w, h: this.size.h }
+    const full = this.full()
     const face = faceOf(t, full)
     const box = lerpBox(seed(t, full, face), full, e)
     return { box, e, poke: poke(t, box, face) }

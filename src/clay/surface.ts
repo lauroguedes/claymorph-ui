@@ -1,11 +1,14 @@
 import { resolveColor, type RGB } from "./color"
 import { CLAY, SPRINGS } from "./config"
-import { getClayEngine, type ClayFrame, type ClayShape, type ClayView } from "./engine"
+import { getClayEngine, type ClayFrame, type ClayShape, type ClayView, type Padding } from "./engine"
 import { Spring } from "./spring"
 
 interface SurfaceOptions {
-  /** Room around the host for shadows, in CSS px. A function is asked again whenever the surface is dirty. */
-  pad?: number | (() => number)
+  /**
+   * Room around the host for shadows, in CSS px: the same on every side, or each side its own, as for
+   * clay that reaches far one way. A function is asked again whenever the surface is dirty.
+   */
+  pad?: number | (() => number | Padding)
   /** Hover swell and press squash on the host itself. */
   swell?: boolean
   /** Starts calm: no swell, squash or light leaning toward the pointer. */
@@ -29,7 +32,9 @@ class ClaySurface implements ClayView {
   readonly host: HTMLElement
   readonly canvas = document.createElement("canvas")
   readonly ctx: CanvasRenderingContext2D
+  /** The room on every side, or the most room on any side when they differ. */
   pad: number
+  padding: Padding
   readonly hover = new Spring(0)
   readonly press = new Spring(0)
   width = 0
@@ -56,6 +61,7 @@ class ClaySurface implements ClayView {
     this.host = host
     this.options = options
     this.pad = typeof options.pad === "number" ? options.pad : 28
+    this.padding = { left: this.pad, top: this.pad, right: this.pad, bottom: this.pad }
     this.calmed = options.calm ?? false
     this.ctx = this.canvas.getContext("2d")!
     this.canvas.className = "clay-canvas"
@@ -207,12 +213,15 @@ class ClaySurface implements ClayView {
       this.height = this.host.offsetHeight
       this.colors.clear()
       this.options.measure?.()
-      const pad = typeof this.options.pad === "function" ? this.options.pad() : this.pad
-      this.pad = pad
+      const pad = typeof this.options.pad === "function" ? this.options.pad() : this.padding
+      const p = typeof pad === "number" ? { left: pad, top: pad, right: pad, bottom: pad } : pad
+      this.padding = p
+      this.pad = Math.max(p.left, p.top, p.right, p.bottom)
       const style = this.canvas.style
-      style.left = style.top = `${-pad}px`
-      style.width = `${this.width + pad * 2}px`
-      style.height = `${this.height + pad * 2}px`
+      style.left = `${-p.left}px`
+      style.top = `${-p.top}px`
+      style.width = `${this.width + p.left + p.right}px`
+      style.height = `${this.height + p.top + p.bottom}px`
     }
     let moving = this.hover.step(dt, SPRINGS.hover, still)
     moving = this.press.step(dt, SPRINGS.press, still) || moving

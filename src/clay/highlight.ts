@@ -19,10 +19,13 @@ class Highlight {
   private readonly shown = new Spring(0)
   private readonly list: HTMLElement
   private readonly items: string
+  private readonly viewport: (() => HTMLElement | null) | undefined
 
-  constructor(list: HTMLElement, items: string) {
+  /** `viewport` is the part of the list that scrolls: the well is cut to what of it shows. */
+  constructor(list: HTMLElement, items: string, viewport?: () => HTMLElement | null) {
     this.list = list
     this.items = items
+    this.viewport = viewport
   }
 
   /** Calls back whenever the highlighted item changes. Returns a function that stops. */
@@ -37,6 +40,18 @@ class Highlight {
       return
     }
     const box = offsetWithin(item, this.list)
+    const view = this.viewport?.()
+    if (view) {
+      const shown = offsetWithin(view, this.list)
+      const top = Math.max(box.y, shown.y)
+      const bottom = Math.min(box.y + box.h, shown.y + shown.h)
+      if (bottom - top < 8) {
+        this.shown.target = 0
+        return
+      }
+      box.y = top
+      box.h = bottom - top
+    }
     const springs = [this.x, this.y, this.w, this.h] as const
     const values = [box.x, box.y, box.w, box.h]
     // Appearing, it starts where the pointer is instead of sliding in from the last item.

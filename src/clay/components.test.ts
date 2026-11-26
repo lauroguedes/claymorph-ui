@@ -403,3 +403,322 @@ test("an attached select's joint is smoothed all the way at any fuse", async () 
   select.setAttribute("fuse", "0.5")
   expect(attachment.shapes().some((shape) => shape.flatten === 1)).toBe(true)
 })
+
+const genres = (attrs = "") => `
+  <clay-combobox ${attrs}>
+    <ui-combobox>
+      <ui-combobox-label>Genre</ui-combobox-label>
+      <div>
+        <ui-combobox-input><input placeholder="Search genres" /></ui-combobox-input>
+        <ui-combobox-trigger><button aria-label="Show genres"></button></ui-combobox-trigger>
+      </div>
+      <ui-combobox-content hidden>
+        <ui-combobox-empty>No genres found.</ui-combobox-empty>
+        <ui-combobox-list>
+          <ui-combobox-item value="jazz">Jazz</ui-combobox-item>
+          <ui-combobox-item value="samba">Samba</ui-combobox-item>
+          <ui-combobox-item value="soul">Soul</ui-combobox-item>
+        </ui-combobox-list>
+      </ui-combobox-content>
+    </ui-combobox>
+  </clay-combobox>`
+
+test("Sift still chooses by name, and its attached list lines up with the whole field and hugs it", async () => {
+  document.body.innerHTML = genres("attached")
+  await settle()
+  const field = document.querySelector("ui-combobox-input")!.parentElement!
+  const content = document.querySelector("ui-combobox-content")!
+  expect(content.getAttribute("anchor"), "the list lines up with the field, buttons and all").toBe(`#${field.id}`)
+  expect(content.getAttribute("side-offset")).toBe("4")
+  document.querySelector("clay-combobox")!.setAttribute("fuse", "1")
+  expect(content.getAttribute("side-offset"), "fused, it sits right on the field").toBe("0")
+  const result = await agent.act({ steps: [{ ref: "Genre", action: "setValue", args: ["Samba"] }] })
+  expect(result.ok, result.error?.message).toBe(true)
+  await settle()
+  expect(document.querySelector("input")!.value).toBe("Samba")
+})
+
+test("Sift keeps an anchor the page chose", async () => {
+  document.body.innerHTML = genres().replace("<ui-combobox-content hidden>", `<ui-combobox-content hidden anchor="#elsewhere">`)
+  await settle()
+  expect(document.querySelector("ui-combobox-content")!.getAttribute("anchor")).toBe("#elsewhere")
+})
+
+test("a resizing popup follows its new size on a spring, and the edge it's attached by stays put", async () => {
+  const { Attachment } = await import("./attach")
+  type Box = { x: number; y: number; w: number; h: number }
+  const content = document.createElement("div")
+  const host = document.createElement("button")
+  document.body.append(content, host)
+  const surface = { stale: false, wake() {}, invalidate() {} }
+  const attachment = new Attachment(
+    content,
+    {
+      trigger: () => host,
+      triggerRadius: (box) => box.h / 2,
+      triggerColor: () => [0.3, 0.6, 0.6],
+      color: () => [0.4, 0.4, 0.5],
+      radius: 22,
+      bevel: 16,
+      lift: 1.3,
+      resize: true,
+    },
+    () => surface as never
+  )
+  const inner = attachment as unknown as { trigger: Box; size: { w: number; h: number }; tucked: boolean; follow(t: Box, w: number, h: number): void; full(): Box }
+  const { step } = attachment.surfaceOptions()
+  const open = (t: Box, h: number) => {
+    Object.assign(inner, { trigger: t, size: { w: 200, h }, tucked: false })
+    attachment.emerge.set(0.2)
+    attachment.emerge.target = 1
+    inner.follow(t, 200, h)
+    attachment.emerge.set(1)
+  }
+  const filter = (t: Box, h: number, check: (box: Box) => void) => {
+    inner.trigger = t
+    inner.size = { w: 200, h }
+    inner.follow(t, 200, h)
+    for (let frame = 0; frame < 90; frame++) {
+      step!(1 / 60, false)
+      check(inner.full())
+    }
+  }
+
+  // Below the field: the list's top stays on the field as it shrinks from 300px to 100px.
+  open({ x: 0, y: -50, w: 200, h: 46 }, 300)
+  expect(inner.full(), "coming out, it takes its size at once").toEqual({ x: 0, y: 0, w: 200, h: 300 })
+  inner.follow({ x: 0, y: -50, w: 200, h: 46 }, 200, 100)
+  expect(inner.full().h, "all the way out, it doesn't jump to the new size").toBe(300)
+  const heights: number[] = []
+  filter({ x: 0, y: -50, w: 200, h: 46 }, 100, (box) => {
+    expect(box.y).toBeCloseTo(0, 5)
+    heights.push(box.h)
+  })
+  expect(heights.some((h) => h > 110 && h < 290), "it eases through the sizes in between").toBe(true)
+  expect(inner.full().h).toBeCloseTo(100, 1)
+
+  // Above the field: ui-sdk moves the shorter list down to keep its bottom on the field, and so does its clay.
+  open({ x: 0, y: 304, w: 200, h: 46 }, 300)
+  filter({ x: 0, y: 104, w: 200, h: 46 }, 100, (box) => expect(box.y + box.h).toBeCloseTo(100, 3))
+  expect(inner.full().y).toBeCloseTo(0, 1)
+
+  // Closing, it tucks in at the size it had, whatever its contents do meanwhile.
+  attachment.emerge.target = -0.08
+  inner.follow({ x: 0, y: 104, w: 200, h: 46 }, 200, 300)
+  expect(inner.full().h).toBeCloseTo(100, 1)
+})
+
+test("the sliding highlight is cut to the part of a scrolling list that shows, and hides past it", async () => {
+  const { Highlight } = await import("./highlight")
+  const rect = (y: number, h: number) => ({ left: 0, top: y, right: 200, bottom: y + h, width: 200, height: h, x: 0, y }) as DOMRect
+  const list = document.createElement("div")
+  const viewport = document.createElement("div")
+  const item = document.createElement("div")
+  item.dataset.slot = "combobox-item"
+  item.setAttribute("data-highlighted", "")
+  viewport.append(item)
+  list.append(viewport)
+  list.getBoundingClientRect = () => rect(0, 300)
+  Object.defineProperties(list, { offsetWidth: { value: 200 }, offsetHeight: { value: 300 } })
+  viewport.getBoundingClientRect = () => rect(8, 200)
+  item.getClientRects = () => [rect(0, 0)] as unknown as DOMRectList
+  const highlight = new Highlight(list, "[data-slot='combobox-item']", () => viewport)
+  const springs = highlight as unknown as { y: { target: number }; h: { target: number }; shown: { target: number } }
+
+  item.getBoundingClientRect = () => rect(190, 38)
+  highlight.measure()
+  expect(springs.shown.target).toBe(1)
+  expect(springs.y.target).toBe(190)
+  expect(springs.h.target, "half scrolled out, the well covers only what shows").toBe(18)
+
+  item.getBoundingClientRect = () => rect(204, 38)
+  highlight.measure()
+  expect(springs.shown.target, "scrolled out, it fades away").toBe(0)
+})
+
+test("an attached dialog is pulled out of its button on a neck, flies with a tail, swells into place, and is drawn back in", async () => {
+  const { Flight } = await import("./flight")
+  const content = document.createElement("div")
+  const button = document.createElement("button")
+  document.body.append(content, button)
+  content.getClientRects = () => [{}] as unknown as DOMRectList
+  let landings = 0
+  const surface = { stale: false, key: "", visible: true, canvas: { width: 0, height: 0 }, ctx: { clearRect() {} }, wake() {}, invalidate() {} }
+  const teal = [0.3, 0.6, 0.6]
+  const flight = new Flight(
+    content,
+    {
+      trigger: () => button,
+      triggerShape: (box) => ({ radius: box.h / 2, height: 1 }),
+      triggerColor: () => teal as [number, number, number],
+      color: () => [0.9, 0.9, 0.9],
+      radius: 32,
+      bevel: 26,
+      lift: 2.4,
+      onLand: () => landings++,
+    },
+    () => surface as never
+  )
+  type Shape = { x: number; y: number; w: number; h: number; color: number[]; melt?: number; ghost?: boolean }
+  const inner = flight as unknown as { size: object; trigger: object; follow: { measure(spring: boolean): void }; shapes(): Shape[] }
+  // The dialog is 400 by 240; its button sits 300px to the left of it and 500px below.
+  content.getBoundingClientRect = () => ({ left: 0, top: 0, right: 400, bottom: 240, width: 400, height: 240, x: 0, y: 0 }) as DOMRect
+  Object.defineProperties(content, { offsetWidth: { value: 400 }, offsetHeight: { value: 240 } })
+  Object.assign(inner, { size: { w: 400, h: 240 }, trigger: { x: -300, y: 500, w: 120, h: 44 } })
+  inner.follow.measure(false)
+  content.setAttribute("data-open", "")
+  const stop = flight.connect()
+  const { step } = flight.surfaceOptions()
+  const grown = () => parseFloat(content.style.getPropertyValue("--clay-grow"))
+  const run = (frames: number, check: (shapes: Shape[]) => void = () => {}) => {
+    for (let frame = 0; frame < frames; frame++) {
+      step!(1 / 60, false)
+      check(inner.shapes())
+    }
+  }
+  const middle = (s: Shape) => ({ x: s.x + s.w / 2, y: s.y + s.h / 2 })
+
+  // Pulled out, the bead hangs by a neck from the button's own clay: the button melts the bead into
+  // its clay as a ghost, and the popup draws the bead melted into the button as a ghost, so the real
+  // button shows through.
+  const necked = (shapes: Shape[], joint: Shape[]) =>
+    shapes.length === 2 &&
+    shapes[0]!.ghost === true &&
+    shapes[0]!.color === teal &&
+    !shapes[1]!.ghost &&
+    (shapes[1]!.melt ?? 0) > 1 &&
+    joint.length === 1 &&
+    joint[0]!.ghost === true &&
+    (joint[0]!.melt ?? 0) > 1
+  let pulled: number | null = null
+  let tailed = false
+  run(10, (shapes) => {
+    if (pulled === null && necked(shapes, flight.joint(button) as Shape[])) pulled = flight.fly.x
+  })
+  expect(pulled, "pulled out, the bead hangs by a neck from the button's own clay").not.toBeNull()
+  expect(pulled!, "before it flies off").toBeLessThan(0.01)
+  expect(grown(), "the contents wait for the clay").toBe(0)
+
+  const shown: number[] = []
+  run(120, (shapes) => {
+    shown.push(grown())
+    if (flight.fly.x > 0.3 && flight.fly.x < 0.7 && shapes.length === 3) {
+      const [bead, near, far] = shapes.map(middle)
+      // Droplets drip off behind it, toward the button, melted on; the button has let go of it.
+      if (near!.y > bead!.y && far!.y > near!.y && shapes.slice(1).every((s) => (s.melt ?? 0) > 1) && !flight.joint(button).length) tailed = true
+    }
+  })
+  expect(tailed, "in flight, a tail of droplets drips off behind it").toBe(true)
+  expect(shown.every((value, i) => i === 0 || value >= shown[i - 1]!), "the contents fade in and never back, though the clay wobbles").toBe(true)
+  const shapes = inner.shapes()
+  expect(shapes, "settled, it's the slab alone").toHaveLength(1)
+  expect(shapes[0]).toMatchObject({ x: 0, y: 0, w: 400, h: 240 })
+  expect(shapes[0]!.color.map((c) => +c.toFixed(3)), "in its own colour").toEqual([0.9, 0.9, 0.9])
+  expect(grown()).toBe(1)
+
+  content.removeAttribute("data-open")
+  await Promise.resolve()
+  let drawnIn = false
+  let trailing = false
+  run(150, (shapes) => {
+    if (!landings && necked(shapes, flight.joint(button) as Shape[])) drawnIn = true
+    if (flight.fly.x > 0.3 && flight.fly.x < 0.7 && shapes.length === 3) {
+      const [bead, near, far] = shapes.map(middle)
+      // Flying home, its tail drips off behind it, toward the dialog.
+      if (near!.y < bead!.y && far!.y < near!.y) trailing = true
+    }
+  })
+  expect(trailing, "flying home, its tail trails behind it").toBe(true)
+  expect(drawnIn, "closing, the bead is drawn back into the button's own clay").toBe(true)
+  expect(landings, "and lands once").toBe(1)
+  expect(inner.shapes(), "leaving nothing behind").toEqual([])
+  expect(flight.joint(button), "on either side").toEqual([])
+  expect(grown()).toBe(0)
+  stop()
+})
+
+test("an attached dialog whose button is off screen swells out of its own middle", async () => {
+  const { Flight } = await import("./flight")
+  const content = document.createElement("div")
+  document.body.append(content)
+  content.getClientRects = () => [{}] as unknown as DOMRectList
+  content.getBoundingClientRect = () => ({ left: 0, top: 0, right: 400, bottom: 240, width: 400, height: 240, x: 0, y: 0 }) as DOMRect
+  Object.defineProperties(content, { offsetWidth: { value: 400 }, offsetHeight: { value: 240 } })
+  const surface = { stale: false, key: "", visible: true, canvas: { width: 0, height: 0 }, ctx: { clearRect() {} }, wake() {}, invalidate() {} }
+  const flight = new Flight(
+    content,
+    {
+      // jsdom lays nothing out, so the button has no box on screen, as when it's scrolled away.
+      trigger: () => document.createElement("button"),
+      triggerShape: (box) => ({ radius: box.h / 2, height: 1 }),
+      triggerColor: () => [0.3, 0.6, 0.6],
+      color: () => [0.9, 0.9, 0.9],
+      radius: 32,
+      bevel: 26,
+      lift: 2.4,
+    },
+    () => surface as never
+  )
+  content.setAttribute("data-open", "")
+  const stop = flight.connect()
+  const { step, measure, pad } = flight.surfaceOptions()
+  const seen: Array<{ x: number; y: number; w: number; h: number }> = []
+  for (let frame = 0; frame < 90; frame++) {
+    measure!()
+    step!(1 / 60, false)
+    seen.push(...(flight as unknown as { shapes(): Array<{ x: number; y: number; w: number; h: number }> }).shapes())
+  }
+  expect(seen.length, "it's drawn").toBeGreaterThan(0)
+  expect(seen.every((s) => [s.x, s.y, s.w, s.h].every(Number.isFinite)), "everywhere on the page").toBe(true)
+  const first = seen[0]!
+  expect(first.x + first.w / 2, "from its own middle").toBeCloseTo(200, 0)
+  const room = (pad as () => { left: number; top: number; right: number; bottom: number })()
+  expect(Object.values(room).every(Number.isFinite), "with room for its shadow, and no more").toBe(true)
+  stop()
+})
+
+test("a slab that follows its popup swells to a new size on a spring, and takes its size at once when shown again", async () => {
+  const { Follow } = await import("./follow")
+  const host = document.createElement("div")
+  const child = document.createElement("div")
+  host.append(child)
+  document.body.append(host)
+  let size = { w: 400, h: 300 }
+  Object.defineProperties(host, { offsetWidth: { get: () => size.w }, offsetHeight: { get: () => size.h } })
+  const follow = new Follow(host)
+  follow.measure(true)
+  expect(follow.box(), "the first time, at once").toEqual({ x: 0, y: 0, w: 400, h: 300 })
+
+  size = { w: 400, h: 120 }
+  follow.measure(true)
+  follow.step(1 / 60, false)
+  const h = follow.box().h
+  expect(h, "then on a spring, from its top").toBeGreaterThan(200)
+  expect(follow.box().y).toBe(0)
+  for (let frame = 0; frame < 120; frame++) follow.step(1 / 60, false)
+  expect(follow.box().h).toBeCloseTo(120, 0)
+
+  // Closed, its contents grow back while no one sees them; opened, it doesn't swell from the old size.
+  size = { w: 0, h: 0 }
+  follow.measure(true)
+  size = { w: 400, h: 300 }
+  follow.measure(true)
+  expect(follow.box().h, "shown again, at once").toBe(300)
+  follow.release()
+})
+
+test("a plain dialog follows its contents too, and an attached one leaves that to its flight", async () => {
+  const dialog = (attached: boolean) => `
+    <clay-dialog ${attached ? "attached" : ""}>
+      <ui-dialog>
+        <ui-dialog-trigger><button>Open</button></ui-dialog-trigger>
+        <ui-dialog-content hidden><ui-dialog-title>Title</ui-dialog-title></ui-dialog-content>
+      </ui-dialog>
+    </clay-dialog>`
+  document.body.innerHTML = dialog(false) + dialog(true)
+  await settle()
+  const [plain, attached] = [...document.querySelectorAll("clay-dialog")] as unknown as Array<{ follow: unknown; flight: unknown }>
+  expect(plain!.follow).toBeTruthy()
+  expect(attached!.follow).toBeNull()
+  expect(attached!.flight).toBeTruthy()
+})

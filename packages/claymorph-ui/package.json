@@ -1,6 +1,6 @@
 {
   "name": "claymorph-ui",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Claymorphism web components drawn by one WebGL2 shader, accessible by default with ui-sdk.",
   "keywords": [
     "web-components",
@@ -57,6 +57,14 @@
     "./checkbox": {
       "types": "./dist/entries/checkbox.d.ts",
       "default": "./dist/entries/checkbox.js"
+    },
+    "./combobox": {
+      "types": "./dist/entries/combobox.d.ts",
+      "default": "./dist/entries/combobox.js"
+    },
+    "./command": {
+      "types": "./dist/entries/command.d.ts",
+      "default": "./dist/entries/command.js"
     },
     "./dialog": {
       "types": "./dist/entries/dialog.d.ts",
@@ -138,5 +146,7 @@
   "peerDependencies": {
     "@ui-sdk/core": "^0.1.0-beta.17",
     "@ui-sdk/web": "^0.1.0-beta.17"
-  }
+  },
+  "unpkg": "./dist/cdn/claymorph-ui.js",
+  "jsdelivr": "./dist/cdn/claymorph-ui.js"
 }

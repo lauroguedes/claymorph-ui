@@ -30,7 +30,7 @@ Claymorph UI gives ui-sdk's web components a clay body. You keep writing the ui-
 
 - **One shader, every surface.** A single WebGL2 context draws all the clay on a page, and stops drawing the moment nothing moves.
 - **Accessible by default.** Each element wraps a ui-sdk part, so keyboard support, focus management and ARIA come built in.
-- **Parts that melt together.** Lists, menus, cards and tooltips squeeze out of their trigger and stay fused to it, and `fuse` sets how far.
+- **Parts that melt together.** Lists, menus, cards and tooltips squeeze out of their trigger and stay fused to it, and `fuse` sets how far. Dialogs fly out of their button as a bead and swell into place.
 - **Import only what you use.** One entry per element, with types. A page with a single button ships about 22 KB gzipped, ui-sdk included.
 - **Works without WebGL2.** Before the first frame, on older devices and in forced colours, the same clay is drawn with CSS.
 - **Any framework.** They're web components: use them in React, Vue, Svelte, Angular, Astro or plain HTML.
@@ -43,6 +43,13 @@ npm install claymorph-ui @ui-sdk/web @ui-sdk/core
 ```
 
 `@ui-sdk/web` and `@ui-sdk/core` are peer dependencies, so your app and Claymorph UI share one copy.
+
+Or, on a page with no bundler, load the CDN build, with ui-sdk inside:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.js"></script>
+```
 
 ## Quick start
 
@@ -92,10 +99,12 @@ Every element is named for the one thing it does.
 | Pick | Radio group | `<clay-radio>` | `claymorph-ui/radio` |
 | Stretch | Slider | `<clay-slider>` | `claymorph-ui/slider` |
 | Pour | Select | `<clay-select>` | `claymorph-ui/select` |
+| Sift | Combobox | `<clay-combobox>` | `claymorph-ui/combobox` |
 | Shift | Tabs | `<clay-tabs>` | `claymorph-ui/tabs` |
 | Spill | Menu | `<clay-menu>` | `claymorph-ui/menu` |
 | Unfold | Popover | `<clay-popover>` | `claymorph-ui/popover` |
 | Lift | Dialog | `<clay-dialog>` | `claymorph-ui/dialog` |
+| Summon | Command palette | `<clay-command>` | `claymorph-ui/command` |
 | Pop | Tooltip | `<clay-tooltip>` | `claymorph-ui/tooltip` |
 | Drop | Toast | `<clay-toast-region>` | `claymorph-ui/toast` |
 | Hold | Card | `<clay-card>` | `claymorph-ui/card` |

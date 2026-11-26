@@ -87,7 +87,7 @@
   --clay-color: var(--clay-neutral);
 }
 
-:where(clay-switch, clay-checkbox, clay-slider, clay-toggle, clay-input, clay-radio, clay-progress, clay-meter, clay-slide-confirm) {
+:where(clay-switch, clay-checkbox, clay-slider, clay-toggle, clay-input, clay-combobox, clay-command, clay-radio, clay-progress, clay-meter, clay-slide-confirm) {
   --clay-color: var(--clay-teal);
 }
 
@@ -109,6 +109,7 @@
     clay-avatar,
     clay-select [data-slot="select-trigger"],
     clay-select [data-slot="select-content"],
+    clay-combobox [data-slot="combobox-content"],
     clay-tooltip [data-slot="tooltip-content"],
     :is(clay-menu, clay-popover, clay-dialog) :is([data-slot="menu-trigger"], [data-slot="popover-trigger"], [data-slot="dialog-trigger"]),
     clay-menu [data-slot="menu-content"],
@@ -124,6 +125,7 @@
 }
 
 clay-select [data-slot="select-content"]:not([data-clay-ready]),
+clay-combobox [data-slot="combobox-content"]:not([data-clay-ready]),
 clay-menu [data-slot="menu-content"]:not([data-clay-ready]),
 clay-popover [data-slot="popover-content"]:not([data-clay-ready]),
 clay-dialog [data-slot="dialog-content"]:not([data-clay-ready]),
@@ -620,6 +622,405 @@ clay-select {
   }
 }
 
+/* Sift */
+clay-combobox {
+  display: inline-grid;
+  gap: 8px;
+
+  & [data-slot="combobox-label"] {
+    color: var(--clay-text-soft);
+    font-size: 0.85rem;
+    font-weight: 800;
+  }
+
+  /* The field: the box around the input and its buttons, carved like Type's. */
+  & :has(> ui-combobox-input) {
+    --h: 48px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-width: min(100%, 16rem);
+    height: var(--h);
+    padding-inline: 18px 6px;
+    border-radius: 20px;
+    color: var(--clay-text-soft);
+
+    &:not([data-clay-ready]) {
+      background: color-mix(in oklab, var(--clay-surface), var(--clay-shade) 7%);
+      box-shadow:
+        inset 3px 3px 7px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 25%),
+        inset -3px -3px 6px color-mix(in oklab, var(--clay-surface), white 55%);
+    }
+
+    /* With WebGL2 the rim itself glows on focus; the outline is for the CSS clay. */
+    &:not([data-clay-ready]):has(input:focus-visible) {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 3px;
+    }
+
+    & > ui-combobox-input {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  &[size="sm"] :has(> ui-combobox-input) { --h: 40px; }
+  &[size="lg"] :has(> ui-combobox-input) { --h: 56px; }
+
+  &[data-invalid] :has(> ui-combobox-input):not([data-clay-ready]) {
+    outline-color: var(--clay-danger-text);
+  }
+
+  & [data-slot="combobox-input"] {
+    width: 100%;
+    height: calc(var(--h) - 4px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--clay-text);
+    font: inherit;
+    font-weight: 650;
+    outline: none;
+
+    &::placeholder {
+      color: var(--clay-text-soft);
+      opacity: 1;
+    }
+  }
+
+  & :is([data-slot="combobox-trigger"], [data-slot="combobox-clear"]) {
+    position: relative;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--clay-text-soft);
+
+    /* With WebGL2, a clay bead rises out of the well under it; the icon only darkens. */
+    &:hover:not([data-disabled]) {
+      background: transparent;
+      color: var(--clay-text);
+    }
+
+    &:focus-visible {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 1px;
+    }
+
+    &::after {
+      color: inherit;
+      transition: rotate 0.45s var(--clay-spring);
+    }
+
+    & svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  /* The same bead in CSS, before the first frame or without WebGL2. */
+  & :has(> ui-combobox-input):not([data-clay-ready]) :is([data-slot="combobox-trigger"], [data-slot="combobox-clear"]):hover:not([data-disabled]) {
+    background: var(--clay-surface);
+    box-shadow:
+      0 4px 8px -4px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 55%),
+      inset 2px 2px 4px color-mix(in oklab, var(--clay-surface), white 50%),
+      inset -2px -3px 5px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 18%);
+  }
+
+  &:has(:disabled) :has(> ui-combobox-input) {
+    opacity: 0.6;
+  }
+
+  & [data-slot="combobox-content"] {
+    /* ui-sdk's room below the field, for the list that scrolls inside the clay. */
+    --list-height: var(--available-height);
+    min-width: var(--anchor-width);
+    max-height: none;
+    padding: 8px;
+    overflow: visible;
+    border: 0;
+    border-radius: 22px;
+    color: var(--clay-text);
+    transform-origin: var(--transform-origin);
+    transition:
+      scale 0.5s var(--clay-spring),
+      opacity 0.18s;
+
+    &[data-clay-ready] {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    &:is([data-starting-style], [data-ending-style], [data-closed]) {
+      scale: 0.82 0.5;
+      opacity: 0;
+    }
+  }
+
+  & [data-slot="combobox-list"] {
+    max-height: min(calc(var(--list-height, 20rem) - 24px), 17rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 25%) transparent;
+  }
+
+  & [data-slot="combobox-item"] {
+    min-height: 38px;
+    padding-inline: 12px;
+    border-radius: 14px;
+    font-weight: 700;
+    transition: background 0.15s;
+
+    &[data-highlighted] {
+      background: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 8%);
+      box-shadow:
+        inset 2px 2px 4px color-mix(in oklab, var(--clay-popup), var(--clay-shade) 18%),
+        inset -2px -2px 4px color-mix(in oklab, var(--clay-popup), white 60%);
+    }
+
+    &[data-selected] {
+      color: var(--clay-ring);
+      font-weight: 800;
+    }
+
+    & [data-slot="combobox-item-indicator"] {
+      margin-inline-start: auto;
+    }
+  }
+
+  & [data-slot="combobox-empty"]:not(:empty) {
+    padding: 9px 12px;
+    color: var(--clay-text-soft);
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  & mark {
+    background: none;
+    color: var(--clay-ring);
+    font-weight: 900;
+  }
+}
+
+/* Summon */
+clay-command {
+  position: relative;
+  display: block;
+  width: min(100%, 30rem);
+  border-radius: 26px;
+  color: var(--clay-text);
+
+  /* On its own, without WebGL2 or before the first frame, the CSS clay draws its slab. */
+  &:not([data-clay-ready]):not(ui-dialog-content *) {
+    background: var(--clay-popup);
+    box-shadow:
+      0 12px 22px -10px color-mix(in oklab, var(--clay-popup), var(--clay-shade) 60%),
+      inset 4px 4px 9px color-mix(in oklab, var(--clay-popup), white 50%),
+      inset -5px -6px 11px color-mix(in oklab, var(--clay-popup), var(--clay-shade) 25%);
+  }
+
+  & [data-slot="command"] {
+    width: 100%;
+    max-width: none;
+    gap: 6px;
+    padding: 10px;
+    overflow: visible;
+    border: 0;
+    border-radius: inherit;
+    background: transparent;
+    color: inherit;
+  }
+
+  /* The search field: the box around the input and its icon, carved like Type's. */
+  & :has(> ui-command-input) {
+    --h: 52px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--h);
+    padding-inline: 18px;
+    border: 0;
+    border-radius: 20px;
+    color: var(--clay-text-soft);
+
+    &:not([data-clay-ready]) {
+      background: color-mix(in oklab, var(--clay-surface), var(--clay-shade) 7%);
+      box-shadow:
+        inset 3px 3px 7px color-mix(in oklab, var(--clay-surface), var(--clay-shade) 25%),
+        inset -3px -3px 6px color-mix(in oklab, var(--clay-surface), white 55%);
+    }
+
+    &:not([data-clay-ready]):has(input:focus-visible) {
+      outline: 3px solid var(--clay-ring);
+      outline-offset: 3px;
+    }
+
+    & > svg {
+      flex-shrink: 0;
+      width: 18px;
+      height: 18px;
+    }
+
+    & > ui-command-input {
+      flex: 1;
+      min-width: 0;
+    }
+  }
+
+  & [data-slot="command-input"] {
+    width: 100%;
+    height: calc(var(--h, 52px) - 4px);
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    color: var(--clay-text);
+    font: inherit;
+    font-size: 1.02rem;
+    font-weight: 650;
+    outline: none;
+
+    &::placeholder {
+      color: var(--clay-text-soft);
+      opacity: 1;
+    }
+  }
+
+  & [data-slot="command-list"] {
+    max-height: min(22rem, 52vh);
+    padding: 2px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 25%) transparent;
+  }
+
+  & [data-slot="command-group-label"] {
+    padding: 10px 12px 4px;
+    color: var(--clay-text-soft);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  & [data-slot="command-separator"] {
+    height: 2px;
+    margin: 6px 12px;
+    border-radius: 1px;
+    background: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 10%);
+  }
+
+  & [data-slot="command-item"] {
+    gap: 12px;
+    min-height: 42px;
+    padding-inline: 12px;
+    border-radius: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &[data-highlighted] {
+      background: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 8%);
+      box-shadow:
+        inset 2px 2px 4px color-mix(in oklab, var(--clay-popup), var(--clay-shade) 18%),
+        inset -2px -2px 4px color-mix(in oklab, var(--clay-popup), white 60%);
+    }
+
+    &[data-disabled] {
+      opacity: 0.45;
+      cursor: default;
+    }
+  }
+
+  & [data-slot="command-item-icon"] {
+    color: var(--clay-text-soft);
+
+    & svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  & [data-slot="command-shortcut"] {
+    margin-inline-start: auto;
+    padding: 2px 8px;
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--clay-popup), var(--clay-shade) 9%);
+    box-shadow: inset 0 -1px 0 color-mix(in oklab, var(--clay-popup), var(--clay-shade) 16%);
+    color: var(--clay-text-soft);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  & [data-slot="command-empty"]:not(:empty) {
+    padding: 18px 12px;
+    color: var(--clay-text-soft);
+    font-weight: 700;
+    text-align: center;
+  }
+
+  & mark {
+    background: none;
+    color: var(--clay-ring);
+    font-weight: 900;
+  }
+}
+
+/* A well slides between the commands in the clay; their own highlight steps aside for it. */
+clay-command[data-clay-ready] [data-slot="command-item"][data-highlighted] {
+  background: transparent;
+  box-shadow: none;
+}
+
+/*
+ * A palette: a command in a dialog. It sits near the top of the page, so the search stays put as the
+ * list narrows under it, and the dialog is its slab.
+ */
+clay-dialog [data-slot="dialog-content"]:has(> clay-command) {
+  width: min(34rem, calc(100% - 2rem));
+  margin-top: min(14vh, 8rem);
+  padding: 6px;
+  gap: 0;
+
+  & > clay-command {
+    width: 100%;
+  }
+
+  /* It's named by its title, which the search makes plain to see. */
+  & > [data-slot="dialog-title"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+clay-dialog [data-slot="dialog-trigger"] {
+  & > svg {
+    width: 1.1em;
+    height: 1.1em;
+  }
+
+  & [data-slot="dialog-shortcut"] {
+    padding: 1px 7px;
+    border-radius: 7px;
+    background: color-mix(in oklab, currentColor, transparent 85%);
+    font-size: 0.78em;
+    font-weight: 800;
+  }
+}
+
 clay-tooltip [data-slot="tooltip-content"] {
   padding: 7px 12px;
   border-radius: 12px;
@@ -955,6 +1356,42 @@ clay-dialog [data-slot="dialog-content"] {
   }
 }
 
+/*
+ * Attached Lift: the clay flies out of the button and swells into the dialog, so the slab itself stays
+ * put. Its contents fade in as the clay swells, from --clay-grow, and a hair of travel keeps ui-sdk
+ * from removing it until the clay is back in the button.
+ */
+clay-dialog[attached] [data-slot="dialog-content"] {
+  translate: 0 0;
+  scale: 1;
+  opacity: 1;
+  transition: translate 1s linear;
+
+  &:is([data-starting-style], [data-closed]) {
+    translate: 0 0.01px;
+    scale: 1;
+    opacity: 1;
+  }
+
+  /* Not the way it came in: a transition that only reverses is cut short. */
+  &[data-ending-style] {
+    translate: 0 0.02px;
+    scale: 1;
+    opacity: 1;
+  }
+
+  & > :not(.clay-canvas) {
+    opacity: clamp(0, calc((var(--clay-grow, 1) - 0.72) * 3.6), 1);
+    translate: 0 calc((1 - var(--clay-grow, 1)) * 10px);
+  }
+}
+
+/* The bead is pulled out of the button's own clay: the page only dims once it has let go of the
+   button, so the button and the bead look alike where they join. */
+clay-dialog[attached][data-clay-held] [data-slot="dialog-backdrop"] {
+  opacity: 0;
+}
+
 .clay-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1265,8 +1702,8 @@ clay-radio {
 }
 
 /* A well slides between options in the clay; the items' own highlight steps aside for it. */
-:is(clay-select [data-slot="select-content"], clay-menu [data-slot="menu-content"])[data-clay-ready]
-  :is([data-slot="select-item"], [data-slot="menu-item"], [data-slot="menu-checkbox-item"], [data-slot="menu-radio-item"])[data-highlighted] {
+:is(clay-select [data-slot="select-content"], clay-combobox [data-slot="combobox-content"], clay-menu [data-slot="menu-content"])[data-clay-ready]
+  :is([data-slot="select-item"], [data-slot="combobox-item"], [data-slot="menu-item"], [data-slot="menu-checkbox-item"], [data-slot="menu-radio-item"])[data-highlighted] {
   background: transparent;
   box-shadow: none;
 }
@@ -1549,8 +1986,8 @@ clay-slide-confirm[data-state="pending"] [data-icon="pending"] {
  * inside it). Only its contents fade, and a hair of travel keeps ui-sdk from removing it until the clay
  * has tucked back in.
  */
-:is(clay-select, clay-menu, clay-popover, clay-tooltip)[attached]
-  :is([data-slot="select-content"], [data-slot="menu-content"], [data-slot="popover-content"], [data-slot="tooltip-content"]) {
+:is(clay-select, clay-combobox, clay-menu, clay-popover, clay-tooltip)[attached]
+  :is([data-slot="select-content"], [data-slot="combobox-content"], [data-slot="menu-content"], [data-slot="popover-content"], [data-slot="tooltip-content"]) {
   scale: 1;
   opacity: 1;
   translate: 0 0;
@@ -1618,7 +2055,7 @@ clay-tooltip[attached][data-tone="dark"] [data-slot="tooltip-content"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  :is(clay-badge, .clay-action-label > span, .clay-bead svg, .clay-slide-label > span, .clay-slide-icon svg, [data-slot="select-content"], [data-slot="select-item"], [data-slot="tooltip-content"], [data-slot="menu-content"], [data-slot="menu-item"], [data-slot="popover-content"], [data-slot="popover-content"] > :not(.clay-canvas), [data-slot="dialog-content"], [data-slot="dialog-backdrop"], [data-slot="toast"], [data-slot="tabs-panel"]) {
+  :is(clay-badge, .clay-action-label > span, .clay-bead svg, .clay-slide-label > span, .clay-slide-icon svg, [data-slot="select-content"], [data-slot="select-item"], [data-slot="combobox-content"], [data-slot="combobox-content"] > :not(.clay-canvas), [data-slot="tooltip-content"], [data-slot="menu-content"], [data-slot="menu-item"], [data-slot="popover-content"], [data-slot="popover-content"] > :not(.clay-canvas), [data-slot="dialog-content"], [data-slot="dialog-backdrop"], [data-slot="toast"], [data-slot="tabs-panel"]) {
     animation: none;
     transition: none;
   }
@@ -1633,7 +2070,7 @@ clay-tooltip[attached][data-tone="dark"] [data-slot="tooltip-content"] {
     display: none;
   }
 
-  :is(clay-button, clay-action-button, clay-toggle, clay-button-group, clay-badge, clay-card, clay-avatar, clay-segmented, clay-switch, clay-checkbox, clay-input, clay-slide-confirm, clay-select [data-slot="select-trigger"], clay-tabs [data-slot="tabs-list"], [data-slot="menu-content"], [data-slot="popover-content"], [data-slot="dialog-content"], [data-slot="toast"]) {
+  :is(clay-button, clay-action-button, clay-toggle, clay-button-group, clay-badge, clay-card, clay-avatar, clay-segmented, clay-switch, clay-checkbox, clay-input, clay-slide-confirm, clay-select [data-slot="select-trigger"], clay-combobox :has(> ui-combobox-input), [data-slot="combobox-content"], clay-command :has(> ui-command-input), clay-command:not(ui-dialog-content *), clay-tabs [data-slot="tabs-list"], [data-slot="menu-content"], [data-slot="popover-content"], [data-slot="dialog-content"], [data-slot="toast"]) {
     border: 1px solid CanvasText;
   }
 
@@ -1641,7 +2078,7 @@ clay-tooltip[attached][data-tone="dark"] [data-slot="tooltip-content"] {
     outline: 2px solid Highlight;
   }
 
-  clay-input:has(:focus-visible) {
+  :is(clay-input, clay-combobox :has(> ui-combobox-input), clay-command :has(> ui-command-input)):has(:focus-visible) {
     outline: 3px solid Highlight;
     outline-offset: 3px;
   }

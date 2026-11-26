@@ -5,13 +5,50 @@ import { ClayElement, NEUTRAL } from "../element"
 import { GLUE } from "../attach"
 import { clamp, deeper, watch } from "../shared"
 import { Spring } from "../spring"
-import { offsetWithin, type SurfaceOptions } from "../surface"
+import { offsetWithin, type ClaySurface, type SurfaceOptions } from "../surface"
 
 const userInvalid = (field: Element) => {
   try {
     return field.matches(":user-invalid") || field.getAttribute("aria-invalid") === "true"
   } catch {
     return field.getAttribute("aria-invalid") === "true"
+  }
+}
+
+/** The rim of a text field: it glows in the field's colour while focused, or red while invalid. */
+function fieldRim(surface: ClaySurface, radius: number, focus: number, invalid: boolean): ClayShape {
+  const { width: w, height: h } = surface
+  const body = surface.color("--clay-surface", NEUTRAL)
+  const glow = invalid
+    ? mix(surface.color("--clay-danger", NEUTRAL), surface.color("--clay-danger-text", NEUTRAL), 0.3)
+    : mix(surface.color("--clay-color", NEUTRAL), surface.color("--clay-ring", NEUTRAL), 0.45)
+  return {
+    x: 0,
+    y: 0,
+    w,
+    h,
+    radius,
+    color: mix(body, glow, invalid ? 0.45 + focus * 0.4 : focus * 0.85),
+    height: 0.8 + focus * 0.1,
+    lift: 0.45 + focus * 0.15,
+    bevel: Math.min(h / 2, 18),
+    glow: focus * 0.55,
+  }
+}
+
+/** The well carved into a text field, which gives a little with each keystroke. */
+function fieldWell(surface: ClaySurface, radius: number, focus: number, give: number): ClayShape {
+  const { width: w, height: h } = surface
+  const body = surface.color("--clay-surface", NEUTRAL)
+  return {
+    x: 5,
+    y: 5,
+    w: w - 10,
+    h: h - 10,
+    radius: Math.max(radius - 5, 4),
+    color: mix(deeper(body, 0.07), [1, 1, 1], focus * 0.1),
+    height: -0.75 - focus * 0.25 - give * 0.04,
+    bevel: Math.min((h - 10) / 2, 14),
   }
 }
 
@@ -114,28 +151,11 @@ class ClayInput extends ClayElement {
 
   private shapes(): ClayShape[] {
     const surface = this.surfaces[0]!
-    const { width: w, height: h } = surface
     const body = surface.color("--clay-surface", NEUTRAL)
     const f = clamp(this.focused.x, 0, 1)
-    const glow = this.invalid
-      ? mix(surface.color("--clay-danger", NEUTRAL), surface.color("--clay-danger-text", NEUTRAL), 0.3)
-      : mix(surface.color("--clay-color", NEUTRAL), surface.color("--clay-ring", NEUTRAL), 0.45)
-    const rim = mix(body, glow, this.invalid ? 0.45 + f * 0.4 : f * 0.85)
-    const radius = this.field instanceof HTMLTextAreaElement ? 20 : Math.min(h / 2, 20)
-    const shapes: ClayShape[] = [
-      {
-        x: 0,
-        y: 0,
-        w,
-        h,
-        radius,
-        color: rim,
-        height: 0.8 + f * 0.1,
-        lift: 0.45 + f * 0.15,
-        bevel: Math.min(h / 2, 18),
-        glow: f * 0.55,
-      },
-    ]
+    const radius = this.field instanceof HTMLTextAreaElement ? 20 : Math.min(surface.height / 2, 20)
+    const rim = fieldRim(surface, radius, f, this.invalid)
+    const shapes: ClayShape[] = [rim]
     const out = clamp(this.out.x, 0, 1.2)
     for (const [box, dir, tint] of [
       [this.label, -1, 0.5],
@@ -144,19 +164,10 @@ class ClayInput extends ClayElement {
       if (!box) continue
       const shift = dir * (f * 4 - (1 - out) * 18)
       const bead = { x: box.x, y: box.y + shift, w: box.w, h: box.h }
-      const color = mix(body, rim, tint)
+      const color = mix(body, rim.color, tint)
       shapes.push({ ...bead, radius: bead.h / 2, color, height: 0.8, melt: GLUE * 0.6, lift: 0.4 })
     }
-    shapes.push({
-      x: 5,
-      y: 5,
-      w: w - 10,
-      h: h - 10,
-      radius: Math.max(radius - 5, 4),
-      color: mix(deeper(body, 0.07), [1, 1, 1], f * 0.1),
-      height: -0.75 - f * 0.25 - this.pulse.x * 0.04,
-      bevel: Math.min((h - 10) / 2, 14),
-    })
+    shapes.push(fieldWell(surface, radius, f, this.pulse.x))
     return shapes
   }
 }
@@ -247,4 +258,4 @@ class ClayRadio extends ClayElement {
   }
 }
 
-export { ClayInput, ClayRadio }
+export { ClayInput, ClayRadio, fieldRim, fieldWell, userInvalid }

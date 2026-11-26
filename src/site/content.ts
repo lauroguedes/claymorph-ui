@@ -145,6 +145,25 @@ import "claymorph-ui"`,
         type: "p",
         text: "Types ship with the package. Each entry adds its element to `HTMLElementTagNameMap`, so `document.querySelector(\"clay-select\")` is typed as `ClaySelect`.",
       },
+      { type: "h", text: "From a CDN" },
+      {
+        type: "p",
+        text: "For a prototype, a CodePen or a page with no build step, load the CDN build: one stylesheet with ui-sdk's styles and Clay's, and one module with every element and the ui-sdk parts they wrap. There's nothing to install.",
+      },
+      {
+        type: "code",
+        title: "index.html",
+        code: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.js"></script>
+
+<clay-button color="teal">
+  <ui-button><button>Get started</button></ui-button>
+</clay-button>`,
+      },
+      {
+        type: "p",
+        text: "The module exports what the package does, so a script can `import { toast } from \"https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.js\"`. It's about 160 KB gzipped with ui-sdk inside, so it already includes ui-sdk's parts: don't load ui-sdk's own `web.js` beside it. A bundler that imports only the elements a page uses ships much less. The same files are on unpkg, and in production pin an exact version, like `claymorph-ui@0.5.0`.",
+      },
       {
         type: "note",
         text: "Each surface draws its shadow a little outside its element. If a page scrolls sideways because of an element at its edge, give `html` and `body` `overflow-x: clip`.",
@@ -596,7 +615,7 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
       {
         type: "when",
         use: ["One choice from a list longer than a few options."],
-        avoid: ["Two to five short options: use **Slide**.", "Searching a long list: use a combobox."],
+        avoid: ["Two to five short options: use **Slide**.", "Searching a long list: use **Sift**."],
       },
       { type: "install" },
       { type: "h", text: "Usage" },
@@ -643,6 +662,157 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
         items: [
           "A ui-sdk select: a combobox trigger, a listbox, typeahead, and the value submitted with its form.",
           "The list's opening is CSS on `data-starting-style`, so it's off under reduced motion.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "combobox",
+    group: "components",
+    section: "Inputs",
+    title: "Combobox",
+    tag: "clay-combobox",
+    verb: "Sift",
+    signature: "The list narrows as you type.",
+    description:
+      "A combobox whose field is carved like Type's, with a list that pours out under it and narrows as you type, while a well slides between the matches. Wraps `ui-combobox`.",
+    hero: "combobox-basic",
+    blocks: [
+      {
+        type: "when",
+        use: ["One choice from a long list, found by typing: a country, a genre, an assignee."],
+        avoid: ["A short list people can scan: use **Pour**.", "Free text where suggestions only help: use **Type**."],
+      },
+      { type: "install" },
+      { type: "h", text: "Usage" },
+      {
+        type: "p",
+        text: "Put the input and its buttons in one box: that box is the field the clay is carved into, and the list lines up with it. A trigger button with no icon of its own gets a chevron.",
+      },
+      {
+        type: "code",
+        title: "index.html",
+        code: `<clay-combobox>
+  <ui-combobox>
+    <ui-combobox-label>Genre</ui-combobox-label>
+    <div>
+      <ui-combobox-input><input placeholder="Search genres" /></ui-combobox-input>
+      <ui-combobox-trigger><button aria-label="Show genres"></button></ui-combobox-trigger>
+    </div>
+    <ui-combobox-content hidden>
+      <ui-combobox-empty>No genres found.</ui-combobox-empty>
+      <ui-combobox-list>
+        <ui-combobox-item value="jazz">Jazz</ui-combobox-item>
+        <ui-combobox-item value="samba">Samba</ui-combobox-item>
+      </ui-combobox-list>
+    </ui-combobox-content>
+  </ui-combobox>
+</clay-combobox>`,
+      },
+      { type: "h", text: "Attached" },
+      {
+        type: "p",
+        text: "With `attached`, the list squeezes out of the field's rim and stays melted onto it. As you type, it swells and shrinks on a spring with the matches, from the edge it's attached by, and the field's well gives a little as it tucks back in. Type “so”, then delete it, to see it shrink and swell back.",
+      },
+      { type: "demo", id: "combobox-attached", title: "Attached" },
+      { type: "h", text: "Fuse" },
+      {
+        type: "p",
+        text: "Like Pour's, `fuse` sets how far the list melts into the field, from `0`, a slight waist with a small gap, to `1`, one body. Set it with the slider, then open the list.",
+      },
+      { type: "demo", id: "combobox-fuse", title: "Fuse" },
+      { type: "h", text: "API reference" },
+      {
+        type: "api",
+        title: "Attributes",
+        rows: [
+          { ...COMMON_API[0]!, default: "teal", description: "The rim's glow while focused. The list uses `--clay-popup`." },
+          { name: "size", type: "sm | md | lg", default: "md", description: "The field's height: 40, 48 or 56 px." },
+          { name: "attached", type: "boolean", description: "Grows the list out of the field and keeps them melted together while it's open, its size following the matches on a spring." },
+          { name: "fuse", type: "number", default: "0", description: "With `attached`, how far the list melts into the field, from 0 to 1." },
+        ],
+      },
+      { type: "h", text: "Accessibility" },
+      {
+        type: "list",
+        items: [
+          "A ui-sdk combobox, the WAI-ARIA pattern with list autocomplete: focus stays in the input while the arrow keys move the highlight, Enter chooses, and Escape closes the list and restores the chosen label.",
+          "Name the input with `ui-combobox-label`, and an icon-only trigger or clear button with `aria-label`.",
+          "Long lists scroll inside the clay, and the well never slides past what shows of them.",
+          "Opening is CSS on `data-starting-style`, and the resize follows the reduced-motion setting, so both are still under reduced motion.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "command",
+    group: "components",
+    section: "Views and popups",
+    title: "Command",
+    tag: "clay-command",
+    verb: "Summon",
+    signature: "A palette of commands at a keystroke.",
+    description:
+      "The search and list of a command palette: the search is carved like Type's field, a well slides between the commands, and the slab swells and shrinks as typing narrows the list. Wraps `ui-command`; in a dialog, it's a ⌘K palette.",
+    hero: "command-basic",
+    blocks: [
+      {
+        type: "when",
+        use: ["Running any action or going anywhere from the keyboard, by name: a palette behind ⌘K."],
+        avoid: ["Choosing a value for a form: use **Sift**.", "A few actions on one thing: use **Spill**."],
+      },
+      { type: "install" },
+      { type: "h", text: "Usage" },
+      {
+        type: "p",
+        text: "Put the search input and its icon in one box: that box is the field the clay is carved into. On its own, the command is a clay slab; type and it swells and shrinks with the list on a spring.",
+      },
+      {
+        type: "code",
+        title: "index.html",
+        code: `<clay-command>
+  <ui-command>
+    <div>
+      <svg aria-hidden="true">…</svg>
+      <ui-command-input><input aria-label="Search commands" placeholder="Type a command or search…" /></ui-command-input>
+    </div>
+    <ui-command-empty>No commands found.</ui-command-empty>
+    <ui-command-list>
+      <ui-command-group>
+        <ui-command-group-label>Playback</ui-command-group-label>
+        <ui-command-item value="play">Play or pause</ui-command-item>
+        <ui-command-item value="shuffle">Shuffle the queue</ui-command-item>
+      </ui-command-group>
+    </ui-command-list>
+  </ui-command>
+</clay-command>`,
+      },
+      { type: "h", text: "Palette" },
+      {
+        type: "p",
+        text: "For a palette, put the command in a `<clay-dialog>`, give its trigger a `shortcut`, like `mod+k`, and close the dialog on the command's `action` event. The dialog is the slab: it drops onto the page near the top, so the search stays put, and it swells and shrinks with the list as you type. Press the button or ⌘J / Ctrl+J, then type.",
+      },
+      { type: "demo", id: "command-palette", title: "Palette" },
+      { type: "h", text: "Attached" },
+      {
+        type: "p",
+        text: "With `attached` on the `<clay-dialog>`, the palette is pulled out of its button's own clay, flies up and swells into place, and flies back into the button when it closes, as Lift does. Opened with the shortcut while its button is out of sight, it swells in place instead. Press the button or ⌘K / Ctrl+K.",
+      },
+      { type: "demo", id: "command-attached", title: "Attached" },
+      { type: "h", text: "API reference" },
+      {
+        type: "api",
+        title: "Attributes",
+        rows: [{ ...COMMON_API[0]!, default: "teal", description: "The search field's glow while focused. The slab uses `--clay-popup`." }],
+      },
+      { type: "h", text: "Accessibility" },
+      {
+        type: "list",
+        items: [
+          "A ui-sdk command: a combobox whose list is always shown. Focus stays in the search while the arrow keys move the highlight, Enter runs the command, and Escape clears the search.",
+          "Name the search input with `aria-label`, and give a palette's dialog a `ui-dialog-title`: it names the dialog, and is hidden from view since the search speaks for itself.",
+          "An item's `shortcut` runs it while the list is mounted, and `ui-command-shortcut` shows its keys for the current platform.",
+          "The slab's swelling follows the reduced-motion setting.",
         ],
       },
     ],
@@ -1192,6 +1362,12 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
         type: "p",
         text: "`.clay-actions` lines the buttons up at the end. Each close part wraps its own button, so put a `<clay-button>` around it.",
       },
+      { type: "h", text: "Attached" },
+      {
+        type: "p",
+        text: "With `attached`, the dialog grows out of the button that opened it, moving like the logo. The button's own clay swells and a bead is pulled out of it on a neck that stretches and lets go, and the page only dims once it has let go. The bead flies off dripping a tail of droplets, which run back into it as it slows, then swells into the slab, wobbling wide and tall as it takes on its colour. The contents fade in once it's nearly full size. Closing runs it all back: the slab shrinks to a bead, flies home with its tail behind, and is drawn back into the button, which bounces as it takes it in.",
+      },
+      { type: "demo", id: "dialog-attached", title: "Attached" },
       { type: "h", text: "API reference" },
       {
         type: "api",
@@ -1200,6 +1376,7 @@ deploy.action = () => fetch("/api/deploy", { method: "POST" })`,
           { ...COMMON_API[0]!, default: "neutral", description: "The trigger's colour. The slab is always `--clay-popup`." },
           { name: "size", type: "sm | md | lg | xl", default: "md", description: "The trigger's height." },
           { name: "icon", type: "boolean", description: "A square trigger, for an icon button with an `aria-label`." },
+          { name: "attached", type: "boolean", description: "Pulls the dialog out of its trigger as a bead that flies to its place and swells into it, and draws it back in when it closes." },
         ],
       },
       { type: "h", text: "Accessibility" },
@@ -1567,6 +1744,19 @@ toast("Added to queue", { action: { label: "Undo", onAction: undo } })`,
 ]
 
 const RELEASES: Release[] = [
+  {
+    version: "0.5.0",
+    date: "2026-11-26",
+    title: "Sifted, flown and summoned",
+    changes: [
+      { kind: "new", page: "combobox", text: "**Sift**, `<clay-combobox>`: a combobox whose field is carved like Type's and whose list narrows as you type, with a well sliding between the matches. Wraps `ui-combobox`, from `claymorph-ui/combobox`." },
+      { kind: "new", page: "combobox", text: "`attached` and `fuse` on Sift: the list squeezes out of the field's rim and stays melted onto it, swelling and shrinking on a spring as matches come and go." },
+      { kind: "new", page: "installation", text: "A CDN build for pages with no bundler, on jsDelivr and unpkg: `dist/cdn/claymorph-ui.css`, with ui-sdk's styles and Clay's, and `dist/cdn/claymorph-ui.js`, one module with every element and the ui-sdk parts they wrap, which imports nothing." },
+      { kind: "new", page: "command", text: "**Summon**, `<clay-command>`: a command palette's search, carved like Type's field, and its list, with a well sliding between the commands. On its own it's a slab that swells and shrinks as typing narrows the list; in a `<clay-dialog>` it's a ⌘K palette, and with `attached` the palette flies out of its button. Wraps `ui-command`, from `claymorph-ui/command`." },
+      { kind: "improved", page: "dialog", text: "A dialog whose contents change size, like a palette's list as you type, swells and shrinks on a spring instead of jumping, attached or not." },
+      { kind: "new", page: "dialog", text: "`attached` on Lift, moving like the logo: a bead is pulled out of the button's own clay on a stretching neck, flies off dripping a tail that runs back in as it slows, and swells into the dialog with a wobble. Closing runs it all back into the button, which bounces as it takes it in." },
+    ],
+  },
   {
     version: "0.4.1",
     date: "2026-11-25",

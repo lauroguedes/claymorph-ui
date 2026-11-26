@@ -1,0 +1,15 @@
+<clay-dialog attached color="teal">
+  <ui-dialog>
+    <ui-dialog-trigger><button>New playlist</button></ui-dialog-trigger>
+    <ui-dialog-backdrop hidden></ui-dialog-backdrop>
+    <ui-dialog-content hidden>
+      <ui-dialog-title>New playlist</ui-dialog-title>
+      <ui-dialog-description>Give it a name. You can add songs to it from any album or from your queue.</ui-dialog-description>
+      <clay-input><ui-input><input aria-label="Playlist name" placeholder="Sunday morning" /></ui-input></clay-input>
+      <div class="clay-actions">
+        <clay-button><ui-dialog-close><button>Cancel</button></ui-dialog-close></clay-button>
+        <clay-button color="teal"><ui-dialog-close><button>Create</button></ui-dialog-close></clay-button>
+      </div>
+    </ui-dialog-content>
+  </ui-dialog>
+</clay-dialog>
