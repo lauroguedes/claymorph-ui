@@ -10,7 +10,7 @@ Clay elements give ui-sdk's web components a clay body. The ui-sdk part inside k
 ## Non-negotiable rules
 
 1. **Wrap, don't redraw.** Put the ui-sdk part inside the clay element, with the part's own markup exactly as the ui-sdk docs show. Never imitate the clay with `box-shadow`, gradients, canvas or SVG: the elements draw it with WebGL2 and fall back to CSS on their own.
-2. **Import what you use.** `import "@ui-sdk/core/web.css"` and `import "claymorph-ui/clay.css"` once, then each element's entry, like `import "claymorph-ui/select"`, which defines it and the ui-sdk parts it wraps. `import "claymorph-ui"` defines them all.
+2. **Import what you use.** `import "@ui-sdk/core/web.css"` and `import "claymorph-ui/clay.css"` once, then each element's entry, like `import "claymorph-ui/select"`, which defines it and the ui-sdk parts it wraps. `import "claymorph-ui"` defines them all. With no bundler, load `https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.css` and the module `…/claymorph-ui.js` beside it instead: they include ui-sdk, so don't load ui-sdk's `web.js` too.
 3. **Don't edit Clay's source** to restyle one screen. Colour with the `color` attribute (a preset or any CSS colour) or the `--clay-*` variables; tune the material with the `CLAY` object.
 4. **Listen on the ui-sdk part.** `action` on `<ui-button>` and `<ui-menu>`, `pressedchange` on `<ui-toggle>`, `checkedchange` on `<ui-switch>`, `valuechange` on `<ui-segmented-control>`, `<ui-tabs>`, `<ui-radio-group>` and `<ui-slider>`. Name every control, as ui-sdk requires.
 5. **Don't nest clay to restyle.** A clay element never takes another's colour: `color` belongs to the element it's on. Put controls inside a `clay-card` freely.

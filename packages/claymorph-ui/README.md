@@ -44,6 +44,13 @@ npm install claymorph-ui @ui-sdk/web @ui-sdk/core
 
 `@ui-sdk/web` and `@ui-sdk/core` are peer dependencies, so your app and Claymorph UI share one copy.
 
+Or, on a page with no bundler, load the CDN build, with ui-sdk inside:
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.js"></script>
+```
+
 ## Quick start
 
 Load the styles once, then import the elements you use. Each import registers its element and the ui-sdk parts it wraps.

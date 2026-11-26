@@ -145,6 +145,25 @@ import "claymorph-ui"`,
         type: "p",
         text: "Types ship with the package. Each entry adds its element to `HTMLElementTagNameMap`, so `document.querySelector(\"clay-select\")` is typed as `ClaySelect`.",
       },
+      { type: "h", text: "From a CDN" },
+      {
+        type: "p",
+        text: "For a prototype, a CodePen or a page with no build step, load the CDN build: one stylesheet with ui-sdk's styles and Clay's, and one module with every element and the ui-sdk parts they wrap. There's nothing to install.",
+      },
+      {
+        type: "code",
+        title: "index.html",
+        code: `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.css" />
+<script type="module" src="https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.js"></script>
+
+<clay-button color="teal">
+  <ui-button><button>Get started</button></ui-button>
+</clay-button>`,
+      },
+      {
+        type: "p",
+        text: "The module exports what the package does, so a script can `import { toast } from \"https://cdn.jsdelivr.net/npm/claymorph-ui@0/dist/cdn/claymorph-ui.js\"`. It's about 160 KB gzipped with ui-sdk inside, so it already includes ui-sdk's parts: don't load ui-sdk's own `web.js` beside it. A bundler that imports only the elements a page uses ships much less. The same files are on unpkg, and in production pin an exact version, like `claymorph-ui@0.5.0`.",
+      },
       {
         type: "note",
         text: "Each surface draws its shadow a little outside its element. If a page scrolls sideways because of an element at its edge, give `html` and `body` `overflow-x: clip`.",
@@ -1727,11 +1746,12 @@ toast("Added to queue", { action: { label: "Undo", onAction: undo } })`,
 const RELEASES: Release[] = [
   {
     version: "0.5.0",
-    date: "2026-11-25",
+    date: "2026-11-26",
     title: "Sifted, flown and summoned",
     changes: [
       { kind: "new", page: "combobox", text: "**Sift**, `<clay-combobox>`: a combobox whose field is carved like Type's and whose list narrows as you type, with a well sliding between the matches. Wraps `ui-combobox`, from `claymorph-ui/combobox`." },
       { kind: "new", page: "combobox", text: "`attached` and `fuse` on Sift: the list squeezes out of the field's rim and stays melted onto it, swelling and shrinking on a spring as matches come and go." },
+      { kind: "new", page: "installation", text: "A CDN build for pages with no bundler, on jsDelivr and unpkg: `dist/cdn/claymorph-ui.css`, with ui-sdk's styles and Clay's, and `dist/cdn/claymorph-ui.js`, one module with every element and the ui-sdk parts they wrap, which imports nothing." },
       { kind: "new", page: "command", text: "**Summon**, `<clay-command>`: a command palette's search, carved like Type's field, and its list, with a well sliding between the commands. On its own it's a slab that swells and shrinks as typing narrows the list; in a `<clay-dialog>` it's a ⌘K palette, and with `attached` the palette flies out of its button. Wraps `ui-command`, from `claymorph-ui/command`." },
       { kind: "improved", page: "dialog", text: "A dialog whose contents change size, like a palette's list as you type, swells and shrinks on a spring instead of jumping, attached or not." },
       { kind: "new", page: "dialog", text: "`attached` on Lift, moving like the logo: a bead is pulled out of the button's own clay on a stretching neck, flies off dripping a tail that runs back in as it slows, and swells into the dialog with a wobble. Closing runs it all back into the button, which bounces as it takes it in." },
